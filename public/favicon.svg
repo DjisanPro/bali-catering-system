@@ -1,0 +1,33 @@
+<svg viewBox="0 0 200 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top Knob -->
+  <circle cx="100" cy="18" r="9" fill="#F27D26" />
+  <path d="M96 24 H104 V32 H96 Z" fill="#F27D26" />
+
+  <!-- Cloche Dome -->
+  <path d="M24 130 C24 64, 60 30, 100 30 C140 30, 176 64, 176 130 Z" fill="#F27D26" />
+
+  <!-- Fork (Left) -->
+  <g fill="#FFFFFF">
+    <path d="M60 62 L63 60 L68 76 L66 77 Z" />
+    <path d="M66 57 L69 55 L73 72 L71 73 Z" />
+    <path d="M72 53 L75 51 L78 68 L76 69 Z" />
+    <path d="M78 50 L81 48 L83 64 L81 65 Z" />
+    <path d="M64 74 C66 78, 79 73, 79 66 L82 72 C80 80, 68 84, 64 78 Z" />
+    <path d="M66 77 L48 122 L42 120 L61 75 Z" />
+  </g>
+
+  <!-- Spoon (Center) -->
+  <g fill="#FFFFFF">
+    <ellipse cx="103" cy="70" rx="12" ry="18" transform="rotate(26 103 70)" />
+    <path d="M96 82 L77 125 L71 122 L91 80 Z" />
+  </g>
+
+  <!-- Knife (Right) -->
+  <g fill="#FFFFFF">
+    <path d="M138 52 C146 64, 137 84, 128 92 L121 88 C131 75, 132 60, 138 52 Z" fill-rule="evenodd" />
+    <path d="M125 90 L108 126 L103 124 L120 87 Z" />
+  </g>
+
+  <!-- Bottom Serving Tray / Base -->
+  <rect x="18" y="136" width="164" height="11" rx="5.5" fill="#F27D26" />
+</svg>

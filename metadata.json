@@ -1,0 +1,6 @@
+{
+  "name": "Bali Catering Service",
+  "description": "Sistema de gestão e apresentação do restaurante Bali Catering Service em Tete, Moçambique com catálogo público, pedidos via WhatsApp, dashboard administrativo, controle de estoque com fichas técnicas e rastreabilidade.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
