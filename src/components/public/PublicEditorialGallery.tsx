@@ -45,7 +45,7 @@ const EDITORIAL_PHOTOS: GalleryItem[] = [
   },
   {
     id: '5',
-    title: 'Sumos Naturais e Cerveja 2M',
+    title: 'Sumos Naturais & Refrescos',
     category: 'Bebidas Frescas',
     src: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800&auto=format&fit=crop&q=85',
     aspect: 'square',

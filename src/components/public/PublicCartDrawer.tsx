@@ -107,6 +107,10 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
         notes: orderNotes,
       });
 
+      if (!created) {
+        return;
+      }
+
       // Confetti effect
       confetti({
         particleCount: 80,
@@ -135,11 +139,6 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
       }
 
       clearCart();
-      showToast(
-        'Pedido Registado!',
-        `O pedido ${created.orderNumber} foi inserido no sistema com sucesso.`,
-        'success'
-      );
     } catch (err) {
       console.error(err);
       showToast(

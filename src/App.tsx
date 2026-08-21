@@ -13,6 +13,7 @@ import { PublicFooter } from './components/public/PublicFooter';
 import { PublicCartDrawer } from './components/public/PublicCartDrawer';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminAuthModal } from './components/common/AdminAuthModal';
+import { AuthorizedActionModal } from './components/common/AuthorizedActionModal';
 import { CheckCircle, AlertTriangle, Info } from 'lucide-react';
 
 const ToastContainer: React.FC = () => {
@@ -72,7 +73,7 @@ const ToastContainer: React.FC = () => {
 const MainApp: React.FC = () => {
   const {
     activeView,
-    isAdminAuthenticated,
+    currentUser,
     isCartOpen,
     setIsCartOpen,
     setIsAuthModalOpen,
@@ -83,19 +84,24 @@ const MainApp: React.FC = () => {
       {/* Toast Notification Container */}
       <ToastContainer />
 
-      {/* Admin PIN Authentication Modal */}
+      {/* User Login & Authentication Modal */}
       <AdminAuthModal />
 
-      {activeView === 'public' || !isAdminAuthenticated ? (
+      {/* Elevated Admin Permission Modal */}
+      <AuthorizedActionModal />
+
+      {activeView === 'public' || !currentUser ? (
         /* Public Editorial Gastronomic Website */
         <div className="flex-1 flex flex-col">
           <PublicHeader onOpenCart={() => setIsCartOpen(true)} />
           <main className="flex-1">
             {/* 1. Hero Section */}
-            <PublicHero onExploreMenu={() => {
-              const el = document.getElementById('menu');
-              if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }} />
+            <PublicHero
+              onExploreMenu={() => {
+                const el = document.getElementById('menu');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+            />
 
             {/* 2. Highlights Strip */}
             <PublicHighlightsBar />
@@ -126,7 +132,7 @@ const MainApp: React.FC = () => {
           <PublicCartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         </div>
       ) : (
-        /* Protected Admin Backoffice */
+        /* Protected Management & POS Backoffice */
         <AdminLayout />
       )}
     </div>

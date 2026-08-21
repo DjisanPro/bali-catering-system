@@ -1,26 +1,33 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { Ingredient, StockMovementType, UnitOfMeasure } from '../../types';
-import { formatMT, formatDateTime } from '../../utils/formatters';
+import { formatMT } from '../../utils/formatters';
 import {
-  Package,
   PlusCircle,
   Search,
   AlertTriangle,
-  ArrowDownRight,
-  ArrowUpRight,
   Edit2,
   Trash2,
   CheckCircle2,
-  RefreshCw,
   Plus,
   Minus,
   X,
+  Sliders,
+  DollarSign,
+  PackageCheck,
 } from 'lucide-react';
 import { StockMovementModal } from './StockMovementModal';
 
 export const IngredientsView: React.FC = () => {
-  const { ingredients, createIngredient, updateIngredient, deleteIngredient } = useRestaurant();
+  const {
+    ingredients,
+    createIngredient,
+    updateIngredient,
+    deleteIngredient,
+    addStockMovement,
+    showToast,
+  } = useRestaurant();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [movementModalIngredient, setMovementModalIngredient] = useState<Ingredient | null>(null);
@@ -28,7 +35,7 @@ export const IngredientsView: React.FC = () => {
   const [isNewIngredientModalOpen, setIsNewIngredientModalOpen] = useState(false);
   const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null);
 
-  // New Ingredient form state
+  // Form state
   const [name, setName] = useState('');
   const [category, setCategory] = useState('Carnes');
   const [unit, setUnit] = useState<UnitOfMeasure>('kg');
@@ -43,7 +50,11 @@ export const IngredientsView: React.FC = () => {
     if (categoryFilter !== 'all' && i.category !== categoryFilter) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      return i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q) || (i.supplier && i.supplier.toLowerCase().includes(q));
+      return (
+        i.name.toLowerCase().includes(q) ||
+        i.category.toLowerCase().includes(q) ||
+        (i.supplier && i.supplier.toLowerCase().includes(q))
+      );
     }
     return true;
   });
@@ -51,6 +62,18 @@ export const IngredientsView: React.FC = () => {
   const openMovement = (ing: Ingredient, type: StockMovementType) => {
     setMovementModalIngredient(ing);
     setMovementType(type);
+  };
+
+  const handleQuickAdjust = (ing: Ingredient, delta: number) => {
+    const newStock = Math.max(0, Number((ing.currentStock + delta).toFixed(3)));
+    const type: StockMovementType = delta > 0 ? 'ENTRY' : 'EXIT_WASTE';
+    addStockMovement(
+      ing.id,
+      type,
+      Math.abs(delta),
+      `Ajuste rápido direto de estoque (${delta > 0 ? '+' : ''}${delta} ${ing.unit}) no painel`,
+      'Administrador'
+    );
   };
 
   const handleOpenEdit = (ing: Ingredient) => {
@@ -83,6 +106,7 @@ export const IngredientsView: React.FC = () => {
         costPerUnit: numCost,
         supplier: supplier.trim(),
       });
+      showToast('Estoque Atualizado', `"${name}" e valores foram atualizados com sucesso.`);
     } else {
       createIngredient({
         name: name.trim(),
@@ -93,6 +117,7 @@ export const IngredientsView: React.FC = () => {
         costPerUnit: numCost,
         supplier: supplier.trim(),
       });
+      showToast('Insumo Cadastrado', `"${name}" adicionado ao inventário.`);
     }
 
     setIsNewIngredientModalOpen(false);
@@ -112,7 +137,7 @@ export const IngredientsView: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar ingrediente ou fornecedor..."
+              placeholder="Buscar insumo, categoria ou fornecedor..."
               className="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 focus:outline-none bg-slate-50/50"
             />
           </div>
@@ -120,7 +145,7 @@ export const IngredientsView: React.FC = () => {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white text-slate-700 focus:outline-none"
+            className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold bg-white text-slate-700 focus:outline-none cursor-pointer"
           >
             <option value="all">Todas as Categorias</option>
             {uniqueCategories.map((c) => (
@@ -141,10 +166,10 @@ export const IngredientsView: React.FC = () => {
             setSupplier('');
             setIsNewIngredientModalOpen(true);
           }}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#F27D26] hover:bg-orange-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
-          <span>Novo Ingrediente / Insumo</span>
+          <span>Novo Insumo / Matéria-Prima</span>
         </button>
       </div>
 
@@ -154,17 +179,17 @@ export const IngredientsView: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase text-[10px]">
               <tr>
-                <th className="p-3.5">Ingrediente / Matéria-Prima</th>
+                <th className="p-3.5">Insumo / Matéria-Prima</th>
                 <th className="p-3.5">Categoria</th>
-                <th className="p-3.5">Estoque Atual</th>
+                <th className="p-3.5">Estoque Atual & Ajuste Rápido</th>
                 <th className="p-3.5">Nível Mínimo</th>
                 <th className="p-3.5">Custo Unitário</th>
                 <th className="p-3.5">Fornecedor</th>
                 <th className="p-3.5">Estado</th>
-                <th className="p-3.5 text-right">Movimentar & Ações</th>
+                <th className="p-3.5 text-right">Ações de Gestão</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {filteredIngredients.map((ing) => {
                 const isLow = ing.currentStock <= ing.minimumStock;
                 const isCriticallyLow = ing.currentStock <= ing.minimumStock / 2;
@@ -183,11 +208,35 @@ export const IngredientsView: React.FC = () => {
                       </span>
                     </td>
 
-                    {/* Current Stock */}
-                    <td className="p-3.5 font-mono font-bold text-slate-900">
-                      <span className={`text-sm ${isLow ? 'text-red-600' : 'text-slate-900'}`}>
-                        {ing.currentStock} {ing.unit}
-                      </span>
+                    {/* Current Stock with Quick Adjusters */}
+                    <td className="p-3.5">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`font-mono font-black text-sm ${
+                            isLow ? 'text-red-600' : 'text-slate-900'
+                          }`}
+                        >
+                          {ing.currentStock} {ing.unit}
+                        </span>
+
+                        {/* Quick +/- buttons */}
+                        <div className="flex items-center bg-slate-100 rounded-lg p-0.5 border border-slate-200">
+                          <button
+                            onClick={() => handleQuickAdjust(ing, -1)}
+                            className="p-1 hover:bg-white rounded text-slate-600 hover:text-red-600 transition-colors cursor-pointer"
+                            title="Subtrair 1 unidade"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleQuickAdjust(ing, 1)}
+                            className="p-1 hover:bg-white rounded text-slate-600 hover:text-emerald-600 transition-colors cursor-pointer"
+                            title="Adicionar 1 unidade"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
                     </td>
 
                     {/* Minimum Stock */}
@@ -202,7 +251,7 @@ export const IngredientsView: React.FC = () => {
 
                     {/* Supplier */}
                     <td className="p-3.5 text-slate-600 text-[11px]">
-                      {ing.supplier || 'Mercado Local'}
+                      {ing.supplier || 'Mercado Local Tete'}
                     </td>
 
                     {/* Status Badge */}
@@ -217,31 +266,31 @@ export const IngredientsView: React.FC = () => {
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          <CheckCircle2 className="w-3 h-3" /> Normal
+                          <CheckCircle2 className="w-3 h-3" /> Regular
                         </span>
                       )}
                     </td>
 
-                    {/* Fast Movement Buttons */}
+                    {/* Fast Movement & Edit Buttons */}
                     <td className="p-3.5 text-right space-x-1.5">
                       <button
                         onClick={() => openMovement(ing, 'ENTRY')}
-                        className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[11px] border border-emerald-200"
-                        title="Registar Entrada de Fornecedor"
+                        className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-lg text-[11px] border border-emerald-200 cursor-pointer"
+                        title="Registar Entrada de Lote de Fornecedor"
                       >
                         + Entrada
                       </button>
                       <button
                         onClick={() => openMovement(ing, 'EXIT_WASTE')}
-                        className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg text-[11px] border border-red-200"
+                        className="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-bold rounded-lg text-[11px] border border-red-200 cursor-pointer"
                         title="Registar Perda / Avaria"
                       >
                         - Perda
                       </button>
                       <button
                         onClick={() => handleOpenEdit(ing)}
-                        className="p-1 text-slate-400 hover:text-slate-700 rounded"
-                        title="Editar Ingrediente"
+                        className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer transition-colors"
+                        title="Editar Insumo e Valores"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
@@ -251,8 +300,8 @@ export const IngredientsView: React.FC = () => {
                             deleteIngredient(ing.id);
                           }
                         }}
-                        className="p-1 text-slate-400 hover:text-red-600 rounded"
-                        title="Excluir"
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg cursor-pointer transition-colors"
+                        title="Excluir do Estoque"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -277,14 +326,14 @@ export const IngredientsView: React.FC = () => {
       {/* Create / Edit Ingredient Modal */}
       {isNewIngredientModalOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-              <h3 className="font-serif font-bold text-base text-slate-900">
-                {editingIngredient ? 'Editar Ingrediente' : 'Novo Ingrediente no Estoque'}
+              <h3 className="font-heading font-bold text-base text-slate-900">
+                {editingIngredient ? 'Editar Insumo & Valores de Estoque' : 'Novo Insumo no Estoque'}
               </h3>
               <button
                 onClick={() => setIsNewIngredientModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -292,14 +341,14 @@ export const IngredientsView: React.FC = () => {
 
             <form onSubmit={handleSaveIngredient} className="p-6 space-y-4 text-xs">
               <div>
-                <label className="block text-slate-700 font-bold mb-1">Nome do Ingrediente *</label>
+                <label className="block text-slate-700 font-bold mb-1">Nome do Insumo *</label>
                 <input
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Carne Bovina (Alcatra)"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-orange-500 focus:outline-none font-semibold text-slate-900"
                 />
               </div>
 
@@ -321,7 +370,7 @@ export const IngredientsView: React.FC = () => {
                   <select
                     value={unit}
                     onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold bg-white"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold bg-white cursor-pointer"
                   >
                     <option value="kg">kg (Quilograma)</option>
                     <option value="g">g (Grama)</option>
@@ -335,7 +384,7 @@ export const IngredientsView: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-slate-700 font-bold mb-1">Estoque Inicial</label>
+                  <label className="block text-slate-700 font-bold mb-1">Estoque Atual</label>
                   <input
                     type="number"
                     step="0.01"
@@ -366,7 +415,7 @@ export const IngredientsView: React.FC = () => {
                     min="0"
                     value={costPerUnit}
                     onChange={(e) => setCostPerUnit(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-center font-bold text-orange-600"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-center font-bold text-[#F27D26]"
                   />
                 </div>
               </div>
@@ -386,15 +435,15 @@ export const IngredientsView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsNewIngredientModalOpen(false)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-100"
+                  className="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-100 cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#F27D26] hover:bg-orange-600 text-white font-bold shadow-xs cursor-pointer"
                 >
-                  {editingIngredient ? 'Salvar Alterações' : 'Cadastrar Ingrediente'}
+                  {editingIngredient ? 'Salvar Alterações' : 'Cadastrar Insumo'}
                 </button>
               </div>
             </form>

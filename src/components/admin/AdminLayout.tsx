@@ -11,6 +11,7 @@ import { IngredientsView } from './IngredientsView';
 import { StockControlView } from './StockControlView';
 import { PaymentsView } from './PaymentsView';
 import { CustomersView } from './CustomersView';
+import { UsersView } from './UsersView';
 import { AuditLogsView } from './AuditLogsView';
 import { SettingsView } from './SettingsView';
 
@@ -37,6 +38,8 @@ export const AdminLayout: React.FC = () => {
         return <PaymentsView />;
       case 'customers':
         return <CustomersView />;
+      case 'users':
+        return <UsersView />;
       case 'logs':
         return <AuditLogsView />;
       case 'settings':

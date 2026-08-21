@@ -139,8 +139,8 @@ const FOOD_PHOTO_PRESETS = [
         url: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=900&auto=format&fit=crop&q=85',
       },
       {
-        label: 'Cerveja Nacional 2M Estalando de Fresca',
-        url: 'https://images.unsplash.com/photo-1608270195655-f7fb3a5bb742?w=900&auto=format&fit=crop&q=85',
+        label: 'Chá Gelado com Limão e Hortelã',
+        url: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=900&auto=format&fit=crop&q=85',
       },
       {
         label: 'Água Mineral Natural 500ml',
@@ -284,7 +284,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) 
     const numPrep = parseInt(preparationTimeMinutes) || 10;
 
     if (product) {
-      updateProduct(product.id, {
+      const ok = updateProduct(product.id, {
         name: name.trim(),
         categoryId,
         description: description.trim(),
@@ -299,9 +299,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) 
         availabilityDays: isSeasonal ? availabilityDays : undefined,
         ingredients: recipe,
       });
-      showToast('Produto Atualizado', `"${name}" foi atualizado com sucesso no cardápio.`);
+      if (!ok) return;
     } else {
-      createProduct({
+      const created = createProduct({
         name: name.trim(),
         categoryId,
         description: description.trim(),
@@ -316,7 +316,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) 
         availabilityDays: isSeasonal ? availabilityDays : undefined,
         ingredients: recipe,
       });
-      showToast('Produto Cadastrado', `"${name}" foi adicionado com sucesso ao cardápio.`);
+      if (!created) return;
     }
 
     onClose();

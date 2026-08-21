@@ -14,7 +14,8 @@ export const INITIAL_CONFIG: RestaurantConfig = {
   name: 'Bali Catering Service',
   tagline: 'Sabor autêntico, excelência em catering e grelhados em Tete',
   location: 'Tete, Nuras – Hotel Estrela, Moçambique',
-  locationDetails: 'Localizado no complexo Nuras, junto ao Hotel Estrela. Atendimento no local, take-away, entregas em toda a cidade de Tete e serviço de catering completo para eventos.',
+  locationDetails:
+    'Localizado no complexo Nuras, junto ao Hotel Estrela. Atendimento no local, take-away, entregas em toda a cidade de Tete e serviço de catering completo para eventos.',
   phones: ['+258 872 022 777', '+258 874 660 777', '+258 844 660 771'],
   whatsappPrimary: '258872022777',
   whatsappSecondary: '258874660777',
@@ -24,7 +25,8 @@ export const INITIAL_CONFIG: RestaurantConfig = {
   openingHoursWeekday: 'Segunda a Sábado: 07:30 – 22:30',
   openingHoursWeekend: 'Domingo e Feriados: 08:00 – 22:00',
   autoDeductStockOnConfirm: true,
-  specialNotice: '🌟 Especial aos Domingos e Segundas: Dobrada tradicional com Feijão Branco! Experimente também a nossa autêntica Mousse de Malambe.',
+  specialNotice:
+    'Especial aos Domingos e Segundas: Dobrada tradicional com Feijão Branco. Experimente também a nossa autêntica Mousse de Malambe.',
   adminPinCode: '250420',
 };
 
@@ -74,7 +76,7 @@ export const INITIAL_CATEGORIES: Category[] = [
     name: 'Bebidas & Sumos Naturais',
     slug: 'bebidas',
     iconName: 'Coffee',
-    description: 'Sumos frescos, refrigerantes e cervejas bem geladas',
+    description: 'Sumos frescos naturais, refrigerantes e águas minerais bem geladas',
     displayOrder: 6,
   },
   {
@@ -243,6 +245,17 @@ export const INITIAL_INGREDIENTS: Ingredient[] = [
     lastUpdated: '2025-05-16T16:00:00Z',
   },
   {
+    id: 'ing-maracuja-polpa',
+    name: 'Polpa de Maracujá Fresco',
+    category: 'Frutas & Tradicionais',
+    unit: 'kg',
+    currentStock: 10.0,
+    minimumStock: 4,
+    costPerUnit: 220,
+    supplier: 'Mercado 1º de Maio',
+    lastUpdated: '2025-05-18T07:00:00Z',
+  },
+  {
     id: 'ing-leite-condensado',
     name: 'Leite Condensado (Lata 395g)',
     category: 'Mercearia',
@@ -298,17 +311,6 @@ export const INITIAL_INGREDIENTS: Ingredient[] = [
     lastUpdated: '2025-05-17T11:00:00Z',
   },
   {
-    id: 'ing-cerveja-2m',
-    name: 'Cerveja 2M Garrafa 330ml',
-    category: 'Bebidas Prontas',
-    unit: 'un',
-    currentStock: 72,
-    minimumStock: 24,
-    costPerUnit: 65,
-    supplier: 'Distribuidora CDM Tete',
-    lastUpdated: '2025-05-17T11:00:00Z',
-  },
-  {
     id: 'ing-agua-500',
     name: 'Água Mineral 500ml',
     category: 'Bebidas Prontas',
@@ -322,12 +324,12 @@ export const INITIAL_INGREDIENTS: Ingredient[] = [
 ];
 
 export const INITIAL_PRODUCTS: Product[] = [
-  // 1. Sanduíches & Tostas
   {
     id: 'prod-sandes-carne-assada',
     categoryId: 'cat-sanduiches',
     name: 'Sandes de Carne Assada',
-    description: 'Pão baguete fresco e estaladiço, recheado com generosas tiras de carne bovina marinada e assada lentamente, tomate fresco, alface crocante e molho especial da casa.',
+    description:
+      'Pão baguete fresco e estaladiço, recheado com generosas tiras de carne bovina marinada e assada lentamente, tomate fresco, alface crocante e molho especial da casa.',
     price: 250,
     costPrice: 110,
     imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=800&auto=format&fit=crop&q=80',
@@ -344,7 +346,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-sandes-frango',
     categoryId: 'cat-sanduiches',
     name: 'Sandes de Frango Grelhado',
-    description: 'Peito de frango grelhado e desfiado com tempero aromático de ervas finas, maionese temperada, rodelas de tomate e alface fresca no pão baguete tostado.',
+    description:
+      'Peito de frango grelhado e desfiado com tempero aromático de ervas finas, maionese temperada, rodelas de tomate e alface fresca no pão baguete tostado.',
     price: 220,
     costPrice: 95,
     imageUrl: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?w=800&auto=format&fit=crop&q=80',
@@ -360,7 +363,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-sandes-omelete',
     categoryId: 'cat-sanduiches',
     name: 'Sandes de Omelete com Queijo',
-    description: 'Omelete fofinha feita na hora com dois ovos frescos, queijo derretido, ervas e recheada no pão levemente tostado.',
+    description:
+      'Omelete fofinha feita na hora com dois ovos frescos, queijo derretido, ervas e recheada no pão levemente tostado.',
     price: 180,
     costPrice: 65,
     imageUrl: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&auto=format&fit=crop&q=80',
@@ -376,7 +380,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-tosta-mista',
     categoryId: 'cat-sanduiches',
     name: 'Tosta Mista Tradicional',
-    description: 'Fatias generosas de queijo mozzarella e fiambre selecionado em pão de forma tostado com manteiga até dourar.',
+    description:
+      'Fatias generosas de queijo mozzarella e fiambre selecionado em pão de forma tostado com manteiga até dourar.',
     price: 150,
     costPrice: 60,
     imageUrl: 'https://images.unsplash.com/photo-1582293041079-7814c2f12063?w=800&auto=format&fit=crop&q=80',
@@ -392,7 +397,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-tosta-queijo-tomate',
     categoryId: 'cat-sanduiches',
     name: 'Tosta de Queijo e Tomate com Orégano',
-    description: 'Queijo derretido, rodelas de tomate fresco suculento e um toque aromático de orégano.',
+    description:
+      'Queijo derretido, rodelas de tomate fresco suculento e um toque aromático de orégano.',
     price: 130,
     costPrice: 50,
     imageUrl: 'https://images.unsplash.com/photo-1621800043295-a73fe2f76e2c?w=800&auto=format&fit=crop&q=80',
@@ -404,13 +410,12 @@ export const INITIAL_PRODUCTS: Product[] = [
       { ingredientId: 'ing-tomate-alface', ingredientName: 'Tomate e Alface Frescos (Mix)', unit: 'kg', quantity: 0.04 },
     ],
   },
-
-  // 2. Hambúrgueres Especiais
   {
     id: 'prod-burger-bali-especial',
     categoryId: 'cat-hamburgueres',
     name: 'Bali Burger Especial',
-    description: 'O rei da casa! Hambúrguer artesanal de 180g de carne bovina nobre, queijo cheddar cremoso derretido, tiras de bacon crocante, ovo estrelado, cebola caramelizada, alface, tomate e molho exclusivo Bali.',
+    description:
+      'O carro-chefe da casa! Hambúrguer artesanal de 180g de carne bovina nobre, queijo cheddar cremoso derretido, tiras de bacon crocante, ovo estrelado, cebola caramelizada, alface, tomate e molho exclusivo Bali.',
     price: 350,
     costPrice: 155,
     imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80',
@@ -431,7 +436,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-burger-classic',
     categoryId: 'cat-hamburgueres',
     name: 'Classic Cheeseburger',
-    description: 'Hambúrguer de 150g de pura carne bovina grelhada na chapa com queijo cheddar duplo, alface, tomate fresco e molho clássico no pão com sésamo tostado.',
+    description:
+      'Hambúrguer de 150g de pura carne bovina grelhada na chapa com queijo cheddar duplo, alface, tomate fresco e molho clássico no pão com sésamo tostado.',
     price: 280,
     costPrice: 115,
     imageUrl: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=800&auto=format&fit=crop&q=80',
@@ -448,7 +454,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-burger-crispy-chicken',
     categoryId: 'cat-hamburgueres',
     name: 'Chicken Crispy Burger',
-    description: 'Peito de frango crocante empanado em crosta dourada e temperada, queijo derretido, molho de ervas e salada fresca.',
+    description:
+      'Peito de frango crocante empanado em crosta dourada e temperada, queijo derretido, molho de ervas e salada fresca.',
     price: 270,
     costPrice: 105,
     imageUrl: 'https://images.unsplash.com/photo-1625813506062-0aeb1d7a094b?w=800&auto=format&fit=crop&q=80',
@@ -461,13 +468,12 @@ export const INITIAL_PRODUCTS: Product[] = [
       { ingredientId: 'ing-tomate-alface', ingredientName: 'Tomate e Alface Frescos (Mix)', unit: 'kg', quantity: 0.04 },
     ],
   },
-
-  // 3. Grelhados & Pratos
   {
     id: 'prod-frango-assado-inteiro',
     categoryId: 'cat-pratos',
     name: 'Frango Assado Inteiro no Carvão',
-    description: 'O autêntico sabor de Tete! Frango inteiro marinado com alho, limão e especiarias moçambicanas, grelhado lentamente no carvão. Acompanha generosa porção de batata frita e salada fresca da época.',
+    description:
+      'O autêntico sabor de Tete. Frango inteiro marinado com alho, limão e especiarias moçambicanas, grelhado lentamente no carvão. Acompanha porção de batata frita e salada fresca.',
     price: 650,
     costPrice: 320,
     imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=800&auto=format&fit=crop&q=80',
@@ -485,7 +491,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-meio-frango-assado',
     categoryId: 'cat-pratos',
     name: 'Meio Frango Assado com Acompanhamento',
-    description: 'Meia porção do nosso frango no carvão, suculento e dourado, servido com batata frita ou arroz e molho piripiri à parte.',
+    description:
+      'Meia porção do nosso frango no carvão, suculento e dourado, servido com batata frita ou arroz e molho piripiri à parte.',
     price: 380,
     costPrice: 190,
     imageUrl: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=800&auto=format&fit=crop&q=80',
@@ -501,7 +508,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-bife-vaca',
     categoryId: 'cat-pratos',
     name: 'Bife à Bali com Molho Especial',
-    description: 'Bife de alcatra tenro grelhado na manteiga e ervas, coberto com molho cremoso de pimenta preta, acompanhado de batatas fritas e salada.',
+    description:
+      'Bife de alcatra tenro grelhado na manteiga e ervas, coberto com molho cremoso de pimenta preta, acompanhado de batatas fritas e salada.',
     price: 450,
     costPrice: 220,
     imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
@@ -513,13 +521,12 @@ export const INITIAL_PRODUCTS: Product[] = [
       { ingredientId: 'ing-tomate-alface', ingredientName: 'Tomate e Alface Frescos (Mix)', unit: 'kg', quantity: 0.05 },
     ],
   },
-
-  // 4. Especialidades & Tradicionais
   {
     id: 'prod-dobrada-especial',
     categoryId: 'cat-especialidades',
     name: 'Dobrada Especial com Feijão Branco',
-    description: 'Prato emblemático servido aos Domingos e Segundas. Dobrada bovina cuidadosamente limpa e cozida em lume brando com feijão branco cremoso, chouriço e temperos tradicionais de Moçambique.',
+    description:
+      'Prato servido aos Domingos e Segundas. Dobrada bovina limpa e cozida em lume brando com feijão branco cremoso e temperos tradicionais moçambicanos.',
     price: 350,
     costPrice: 140,
     imageUrl: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=800&auto=format&fit=crop&q=80',
@@ -534,13 +541,12 @@ export const INITIAL_PRODUCTS: Product[] = [
       { ingredientId: 'ing-feijao-branco', ingredientName: 'Feijão Branco de Qualidade', unit: 'kg', quantity: 0.12 },
     ],
   },
-
-  // 5. Sobremesas & Malambe
   {
     id: 'prod-mousse-malambe',
     categoryId: 'cat-sobremesas',
     name: 'Mousse de Malambe Tradicional',
-    description: 'A jóia doce do Bali Catering! Elaborada com a polpa 100% natural do fruto do embondeiro (baobab), leite condensado e natas. Equilíbrio perfeito entre o aveludado e o toque cítrico nativo de Moçambique.',
+    description:
+      'Elaborada com polpa 100% natural do fruto do embondeiro (baobab), leite condensado e natas. Equilíbrio perfeito entre cremosidade e frescura cítrica.',
     price: 180,
     costPrice: 70,
     imageUrl: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?w=800&auto=format&fit=crop&q=80',
@@ -558,7 +564,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-pudim-leite',
     categoryId: 'cat-sobremesas',
     name: 'Pudim de Leite Condensado Caseiro',
-    description: 'Pudim aveludado com calda de caramelo dourada, receita tradicional de família.',
+    description: 'Pudim aveludado com calda de caramelo dourada, receita tradicional caseira.',
     price: 150,
     costPrice: 60,
     imageUrl: 'https://images.unsplash.com/photo-1517427294546-5aa121f68e8a?w=800&auto=format&fit=crop&q=80',
@@ -569,13 +575,11 @@ export const INITIAL_PRODUCTS: Product[] = [
       { ingredientId: 'ing-ovos', ingredientName: 'Ovos Frescos', unit: 'un', quantity: 1 },
     ],
   },
-
-  // 6. Bebidas & Sumos Naturais
   {
     id: 'prod-sumo-malambe',
     categoryId: 'cat-bebidas',
     name: 'Sumo Natural de Malambe (500ml)',
-    description: 'Sumo energizante, rico em vitamina C e minerais, preparado a frio com polpa fresca de embondeiro.',
+    description: 'Sumo natural rico em vitamina C, preparado a frio com polpa pura de embondeiro.',
     price: 100,
     costPrice: 40,
     imageUrl: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?w=800&auto=format&fit=crop&q=80',
@@ -590,13 +594,15 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-sumo-maracuja',
     categoryId: 'cat-bebidas',
     name: 'Sumo Natural de Maracujá Fresco (500ml)',
-    description: 'Sumo 100% natural feito com fruta fresca do dia, bem gelado e refrescante.',
+    description: 'Sumo 100% natural feito com fruta fresca, servido bem gelado.',
     price: 100,
     costPrice: 45,
     imageUrl: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=800&auto=format&fit=crop&q=80',
     isAvailable: true,
     preparationTimeMinutes: 5,
-    ingredients: [],
+    ingredients: [
+      { ingredientId: 'ing-maracuja-polpa', ingredientName: 'Polpa de Maracujá Fresco', unit: 'kg', quantity: 0.1 },
+    ],
   },
   {
     id: 'prod-refrigerante',
@@ -613,20 +619,6 @@ export const INITIAL_PRODUCTS: Product[] = [
     ],
   },
   {
-    id: 'prod-cerveja-2m',
-    categoryId: 'cat-bebidas',
-    name: 'Cerveja Nacional 2M (330ml)',
-    description: 'A clássica cerveja nacional moçambicana, servida estalando de fresca.',
-    price: 90,
-    costPrice: 65,
-    imageUrl: 'https://images.unsplash.com/photo-1608270195655-f7fb3a5bb742?w=800&auto=format&fit=crop&q=80',
-    isAvailable: true,
-    preparationTimeMinutes: 2,
-    ingredients: [
-      { ingredientId: 'ing-cerveja-2m', ingredientName: 'Cerveja 2M Garrafa 330ml', unit: 'un', quantity: 1 },
-    ],
-  },
-  {
     id: 'prod-agua-mineral',
     categoryId: 'cat-bebidas',
     name: 'Água Mineral sem Gás 500ml',
@@ -640,13 +632,12 @@ export const INITIAL_PRODUCTS: Product[] = [
       { ingredientId: 'ing-agua-500', ingredientName: 'Água Mineral 500ml', unit: 'un', quantity: 1 },
     ],
   },
-
-  // 7. Serviços Especiais & Alugueres
   {
     id: 'prod-aluguer-maquina-gelados',
     categoryId: 'cat-servicos',
     name: 'Aluguer de Máquina de Gelados Soft Profissional',
-    description: 'Ideal para festas de aniversário, casamentos, eventos escolares e corporativos em Tete. Inclui transporte, montagem, operador treinado e opções com cones e caldas sob consulta.',
+    description:
+      'Para festas de aniversário, casamentos, eventos escolares e corporativos em Tete. Inclui transporte, montagem, operador treinado e consumíveis sob consulta.',
     price: 3500,
     costPrice: 800,
     imageUrl: 'https://images.unsplash.com/photo-1501443762994-82bd5dace89a?w=800&auto=format&fit=crop&q=80',
@@ -660,7 +651,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-aluguer-maquina-pipocas',
     categoryId: 'cat-servicos',
     name: 'Aluguer de Máquina de Pipocas Estilo Cinema',
-    description: 'Máquina profissional de pipocas quentes (doces ou salgadas) com cheiro irresistível. Perfeita para eventos infantis, feiras e comemorações.',
+    description:
+      'Máquina profissional de pipocas quentes doces ou salgadas para eventos infantis, feiras e comemorações.',
     price: 2500,
     costPrice: 500,
     imageUrl: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?w=800&auto=format&fit=crop&q=80',
@@ -673,8 +665,9 @@ export const INITIAL_PRODUCTS: Product[] = [
     id: 'prod-servico-catering-completo',
     categoryId: 'cat-servicos',
     name: 'Serviço de Buffet & Catering para Eventos',
-    description: 'Solução completa gastronómica para casamentos, conferências, coffee breaks e jantares de gala. Cardápios personalizados com grelhados, saladas, pratos típicos e sobremesas finas.',
-    price: 850, // Preço por pessoa base
+    description:
+      'Solução completa gastronómica para casamentos, conferências, coffee breaks e jantares de gala em Tete.',
+    price: 850,
     costPrice: 400,
     imageUrl: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=800&auto=format&fit=crop&q=80',
     isAvailable: true,
@@ -685,300 +678,17 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
 ];
 
-export const INITIAL_CUSTOMERS: Customer[] = [
-  {
-    id: 'cust-1',
-    name: 'Carlos Alberto Munguambe',
-    phone: '+258 84 123 4567',
-    email: 'carlos.munguambe@empresa.co.mz',
-    address: 'Bairro Francisco Manyanga, Rua 4, Casa 12, Tete',
-    notes: 'Cliente frequente de frango assado e Bali Burger.',
-    totalOrders: 6,
-    totalSpent: 4250,
-    firstOrderDate: '2025-04-10T12:00:00Z',
-    lastOrderDate: '2025-05-18T13:40:00Z',
-  },
-  {
-    id: 'cust-2',
-    name: 'Dra. Vanessa Chissano',
-    phone: '+258 87 987 6543',
-    email: 'vchissano@saude.gov.mz',
-    address: 'Bairro Josina Machel, perto do Hospital Provincial, Tete',
-    notes: 'Pede sempre Dobrada às Segundas e Mousse de Malambe.',
-    totalOrders: 4,
-    totalSpent: 2680,
-    firstOrderDate: '2025-04-18T19:00:00Z',
-    lastOrderDate: '2025-05-17T20:15:00Z',
-  },
-  {
-    id: 'cust-3',
-    name: 'Eng. Fernando Cossa',
-    phone: '+258 82 555 7788',
-    email: 'fernando.cossa@vale-moz.com',
-    address: 'Moatize / Vila de Moatize, Tete',
-    notes: 'Contratou serviço de aluguer de máquina de gelados para festa de aniversário infantil.',
-    totalOrders: 2,
-    totalSpent: 6200,
-    firstOrderDate: '2025-05-02T10:00:00Z',
-    lastOrderDate: '2025-05-15T16:30:00Z',
-  },
-];
+export const INITIAL_CUSTOMERS: Customer[] = [];
 
-export const INITIAL_ORDERS: Order[] = [
-  {
-    id: 'order-1042',
-    orderNumber: 'BC-1042',
-    customerName: 'Carlos Alberto Munguambe',
-    customerPhone: '+258 84 123 4567',
-    customerAddress: 'Bairro Francisco Manyanga, Rua 4, Casa 12, Tete',
-    orderType: 'DELIVERY',
-    status: 'DELIVERED',
-    items: [
-      {
-        productId: 'prod-burger-bali-especial',
-        productName: 'Bali Burger Especial',
-        price: 350,
-        quantity: 2,
-        unitCost: 155,
-        notes: 'Sem cebola em um deles',
-      },
-      {
-        productId: 'prod-mousse-malambe',
-        productName: 'Mousse de Malambe Tradicional',
-        price: 180,
-        quantity: 2,
-        unitCost: 70,
-      },
-      {
-        productId: 'prod-refrigerante',
-        productName: 'Refrigerante Lata 330ml',
-        price: 60,
-        quantity: 2,
-        unitCost: 42,
-        notes: 'Coca-Cola Zero se houver',
-      },
-    ],
-    subtotal: 1180,
-    deliveryFee: 100,
-    discount: 0,
-    total: 1280,
-    paymentStatus: 'PAID',
-    paymentMethod: 'MPESA',
-    notes: 'Entregar no portão preto ao lado da farmácia.',
-    stockDeducted: true,
-    createdAt: '2025-05-18T12:15:00Z',
-    updatedAt: '2025-05-18T13:45:00Z',
-  },
-  {
-    id: 'order-1043',
-    orderNumber: 'BC-1043',
-    customerName: 'Dra. Vanessa Chissano',
-    customerPhone: '+258 87 987 6543',
-    customerAddress: 'Hotel Estrela, Mesa 4',
-    orderType: 'DINE_IN',
-    tableNumber: 'Mesa 04',
-    status: 'PREPARING',
-    items: [
-      {
-        productId: 'prod-dobrada-especial',
-        productName: 'Dobrada Especial com Feijão Branco',
-        price: 350,
-        quantity: 1,
-        unitCost: 140,
-        notes: 'Com piripiri à parte',
-      },
-      {
-        productId: 'prod-sumo-malambe',
-        productName: 'Sumo Natural de Malambe (500ml)',
-        price: 100,
-        quantity: 1,
-        unitCost: 40,
-      },
-    ],
-    subtotal: 450,
-    deliveryFee: 0,
-    discount: 0,
-    total: 450,
-    paymentStatus: 'PAID',
-    paymentMethod: 'POS_CARD',
-    stockDeducted: true,
-    createdAt: '2025-05-18T13:30:00Z',
-    updatedAt: '2025-05-18T13:35:00Z',
-  },
-  {
-    id: 'order-1044',
-    orderNumber: 'BC-1044',
-    customerName: 'Manuel Santos',
-    customerPhone: '+258 86 333 4455',
-    customerAddress: 'Balcão Nuras',
-    orderType: 'TAKEAWAY',
-    status: 'PENDING',
-    items: [
-      {
-        productId: 'prod-frango-assado-inteiro',
-        productName: 'Frango Assado Inteiro no Carvão',
-        price: 650,
-        quantity: 1,
-        unitCost: 320,
-        notes: 'Batata bem estaladiça e molho picante',
-      },
-      {
-        productId: 'prod-cerveja-2m',
-        productName: 'Cerveja Nacional 2M (330ml)',
-        price: 90,
-        quantity: 2,
-        unitCost: 65,
-      },
-    ],
-    subtotal: 830,
-    deliveryFee: 0,
-    discount: 0,
-    total: 830,
-    paymentStatus: 'PENDING',
-    paymentMethod: 'EMOLA',
-    stockDeducted: false,
-    createdAt: '2025-05-18T14:10:00Z',
-    updatedAt: '2025-05-18T14:10:00Z',
-  },
-];
+export const INITIAL_ORDERS: Order[] = [];
 
-export const INITIAL_PAYMENTS: PaymentRecord[] = [
-  {
-    id: 'pay-1',
-    orderId: 'order-1042',
-    orderNumber: 'BC-1042',
-    customerName: 'Carlos Alberto Munguambe',
-    amount: 1280,
-    method: 'MPESA',
-    reference: 'MPESA-87A49921',
-    status: 'COMPLETED',
-    notes: 'Confirmado no terminal M-Pesa Bali',
-    createdAt: '2025-05-18T12:20:00Z',
-    receivedBy: 'Caixa Balcão (Nuras)',
-  },
-  {
-    id: 'pay-2',
-    orderId: 'order-1043',
-    orderNumber: 'BC-1043',
-    customerName: 'Dra. Vanessa Chissano',
-    amount: 450,
-    method: 'POS_CARD',
-    reference: 'POS-TX7842',
-    status: 'COMPLETED',
-    createdAt: '2025-05-18T13:32:00Z',
-    receivedBy: 'Caixa Balcão (Nuras)',
-  },
-];
+export const INITIAL_PAYMENTS: PaymentRecord[] = [];
 
-export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [
-  {
-    id: 'mov-1',
-    ingredientId: 'ing-carne-bovina',
-    ingredientName: 'Carne Bovina (Alcatra/Chã)',
-    unit: 'kg',
-    type: 'ENTRY',
-    quantity: 30,
-    previousStock: 0,
-    newStock: 30,
-    reason: 'Entrada de lote fornecedor Talho Central de Tete (Factura #549)',
-    performedBy: 'Gestor de Estoque',
-    createdAt: '2025-05-17T08:00:00Z',
-  },
-  {
-    id: 'mov-2',
-    ingredientId: 'ing-pao-burger',
-    ingredientName: 'Pão de Hambúrguer com Sésamo',
-    unit: 'un',
-    type: 'ENTRY',
-    quantity: 60,
-    previousStock: 0,
-    newStock: 60,
-    reason: 'Entrada diária Padaria Moderna',
-    performedBy: 'Gestor de Estoque',
-    createdAt: '2025-05-18T06:45:00Z',
-  },
-  {
-    id: 'mov-3',
-    ingredientId: 'ing-carne-bovina',
-    ingredientName: 'Carne Bovina (Alcatra/Chã)',
-    unit: 'kg',
-    type: 'EXIT_ORDER',
-    quantity: 0.36,
-    previousStock: 30,
-    newStock: 29.64,
-    reason: 'Consumo automático receita Pedido BC-1042 (2x Bali Burger)',
-    referenceOrderId: 'order-1042',
-    referenceOrderNumber: 'BC-1042',
-    performedBy: 'Sistema Automático (Ficha Técnica)',
-    createdAt: '2025-05-18T12:16:00Z',
-  },
-  {
-    id: 'mov-4',
-    ingredientId: 'ing-pao-burger',
-    ingredientName: 'Pão de Hambúrguer com Sésamo',
-    unit: 'un',
-    type: 'EXIT_ORDER',
-    quantity: 2,
-    previousStock: 60,
-    newStock: 58,
-    reason: 'Consumo automático receita Pedido BC-1042 (2x Bali Burger)',
-    referenceOrderId: 'order-1042',
-    referenceOrderNumber: 'BC-1042',
-    performedBy: 'Sistema Automático (Ficha Técnica)',
-    createdAt: '2025-05-18T12:16:00Z',
-  },
-  {
-    id: 'mov-5',
-    ingredientId: 'ing-malambe-polpa',
-    ingredientName: 'Polpa de Malambe (Embondeiro/Baobab)',
-    unit: 'kg',
-    type: 'EXIT_ORDER',
-    quantity: 0.16,
-    previousStock: 12.16,
-    newStock: 12.0,
-    reason: 'Consumo automático receita Pedido BC-1042 (2x Mousse de Malambe)',
-    referenceOrderId: 'order-1042',
-    referenceOrderNumber: 'BC-1042',
-    performedBy: 'Sistema Automático (Ficha Técnica)',
-    createdAt: '2025-05-18T12:16:00Z',
-  },
-];
+export const INITIAL_STOCK_MOVEMENTS: StockMovement[] = [];
 
-export const INITIAL_AUDIT_LOGS: AuditLog[] = [
-  {
-    id: 'log-1',
-    action: 'Criação de Pedido',
-    entity: 'ORDER',
-    entityId: 'BC-1042',
-    description: 'Pedido de Delivery criado para Carlos Alberto Munguambe no valor de 1.280 MT.',
-    user: 'Atendimento WhatsApp',
-    timestamp: '2025-05-18T12:15:00Z',
-  },
-  {
-    id: 'log-2',
-    action: 'Dedução de Estoque',
-    entity: 'STOCK',
-    entityId: 'BC-1042',
-    description: 'Estoque de 4 ingredientes deduzido automaticamente pela Ficha Técnica.',
-    user: 'Motor de Rastreabilidade',
-    timestamp: '2025-05-18T12:16:00Z',
-  },
-  {
-    id: 'log-3',
-    action: 'Registo de Pagamento',
-    entity: 'PAYMENT',
-    entityId: 'MPESA-87A49921',
-    description: 'Pagamento de 1.280 MT recebido via M-Pesa para o pedido BC-1042.',
-    user: 'Caixa Balcão',
-    timestamp: '2025-05-18T12:20:00Z',
-  },
-  {
-    id: 'log-4',
-    action: 'Criação de Pedido',
-    entity: 'ORDER',
-    entityId: 'BC-1043',
-    description: 'Pedido presencial (Mesa 04) criado para Dra. Vanessa Chissano no valor de 450 MT.',
-    user: 'Garçom Nuras',
-    timestamp: '2025-05-18T13:30:00Z',
-  },
-];
+export const INITIAL_AUDIT_LOGS: AuditLog[] = [];
+
+export const INITIAL_CASH_SHIFTS: any[] = [];
+
+export const INITIAL_SECURITY_ALERTS: any[] = [];
+
