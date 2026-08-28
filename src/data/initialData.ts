@@ -27,7 +27,7 @@ export const INITIAL_CONFIG: RestaurantConfig = {
   autoDeductStockOnConfirm: true,
   specialNotice:
     'Especial aos Domingos e Segundas: Dobrada tradicional com Feijão Branco. Experimente também a nossa autêntica Mousse de Malambe.',
-  adminPinCode: '250420',
+   adminPinCode: (import.meta && import.meta.env && import.meta.env.VITE_ADMIN_PIN) || '250420',
 };
 
 export const INITIAL_CATEGORIES: Category[] = [

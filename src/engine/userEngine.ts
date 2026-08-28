@@ -4,13 +4,15 @@ import { securityEngine } from './securityEngine';
 export const MAX_ACTIVE_SELLERS = 5;
 
 // Build initial salted hashed credentials
-const adminSalt = 'bali_adm_s4lt_99';
-const adminHash = securityEngine.hashWithSalt('250420', adminSalt);
+// PIN is read from env (Vite exposes VITE_ prefixed vars to client)
+const adminPin = (import.meta && import.meta.env && import.meta.env.VITE_ADMIN_PIN) || '250420';
+const adminSalt = (import.meta && import.meta.env && import.meta.env.VITE_ADMIN_SALT) || 'bali_adm_s4lt_99';
+const adminHash = securityEngine.hashWithSalt(adminPin, adminSalt);
 
-const seller1Salt = 'bali_sel_s4lt_01';
+const seller1Salt = (import.meta && import.meta.env && import.meta.env.VITE_SELLER1_SALT) || 'bali_sel_s4lt_01';
 const seller1Hash = securityEngine.hashWithSalt('1234', seller1Salt);
 
-const seller2Salt = 'bali_sel_s4lt_02';
+const seller2Salt = (import.meta && import.meta.env && import.meta.env.VITE_SELLER2_SALT) || 'bali_sel_s4lt_02';
 const seller2Hash = securityEngine.hashWithSalt('1234', seller2Salt);
 
 export const INITIAL_USERS: User[] = [

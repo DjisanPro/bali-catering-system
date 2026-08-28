@@ -55,7 +55,7 @@ loadStoredBackups();
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -197,6 +197,13 @@ async function startServer() {
     app.get('*', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
+  }
+
+  // Startup validation: warn about missing env vars
+  const requiredEnv = ['GEMINI_API_KEY', 'APP_URL'];
+  const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+  if (missingEnv.length > 0) {
+    console.warn(`[WARN] Missing env vars: ${missingEnv.join(', ')}`);
   }
 
   app.listen(PORT, '0.0.0.0', () => {

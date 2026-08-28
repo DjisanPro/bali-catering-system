@@ -1,8 +1,28 @@
+# Dependencies
 node_modules/
-build/
+bun.lock
+
+# Build output
 dist/
-coverage/
-.DS_Store
+
+# Environment
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
 *.log
-.env*
-!.env.example
+npm-debug.log*
+server_output.log
+
+# Runtime data
+.cloud_backups_store.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
