@@ -12,7 +12,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
   onAdminClick,
   onNavigateSection,
 }) => {
-  const { config } = useRestaurant();
+  const { config, siteSettings } = useRestaurant();
 
   const handleNav = (sectionId: string) => {
     if (onNavigateSection) {
@@ -33,7 +33,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
           <div className="md:col-span-5 space-y-4">
             <BaliLogo variant="horizontal" size="sm" />
             <p className="text-xs text-zinc-400 max-w-sm leading-relaxed font-sans pt-2">
-              Restaurante e serviço de catering em Tete, Moçambique. Grelhados autênticos no carvão, hambúrgueres artesanais e eventos inesquecíveis.
+              {siteSettings?.aboutUs || 'Restaurante e serviço de catering em Tete, Moçambique. Grelhados autênticos no carvão, hambúrgueres artesanais e eventos inesquecíveis.'}
             </p>
           </div>
 
@@ -92,20 +92,20 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
               Contactos & Horário
             </span>
             <p className="text-xs text-zinc-300 leading-relaxed font-sans">
-              <strong className="text-white">Local:</strong> {config.location}
+              <strong className="text-white">Local:</strong> {siteSettings?.address ? `${siteSettings.address}, ${siteSettings.city}` : config.location}
             </p>
             <p className="text-xs text-zinc-300 leading-relaxed font-sans">
-              <strong className="text-white">Telefones:</strong> {config.phones.join(' • ')}
+              <strong className="text-white">Telefones:</strong> {siteSettings?.primaryPhone || config.phones.join(' • ')} {siteSettings?.whatsappNumber ? `• WhatsApp: ${siteSettings.whatsappNumber}` : ''}
             </p>
             <p className="text-xs text-zinc-300 leading-relaxed font-sans">
-              <strong className="text-white">Horário:</strong> {config.openingHoursWeekday}
+              <strong className="text-white">Horário:</strong> {siteSettings?.businessHours || config.openingHoursWeekday}
             </p>
           </div>
         </div>
 
         {/* Bottom Sub-footer */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-sans">
-          <p>© {new Date().getFullYear()} Bali Catering Service. Todos os direitos reservados. Tete, Moçambique.</p>
+          <p>{siteSettings?.footerText || `© ${new Date().getFullYear()} Bali Catering Service. Todos os direitos reservados. Tete, Moçambique.`}</p>
 
           <div className="flex items-center gap-6">
             {/* Discrete Admin Link with Lock Icon */}

@@ -33,7 +33,16 @@ import {
   SecurityAlertSeverity,
   OrderCorrectionRecord,
   OrderItem,
+  SiteSettings,
+  HomepageSection,
+  Banner,
+  ContactMessage,
+  MediaItem,
 } from '../types';
+import { firestoreService } from '../services/firestoreService';
+import { testFirestoreConnection } from '../services/firebase';
+import { authService, hasPermission } from '../services/authService';
+import { storageService } from '../services/storageService';
 import {
   storageEngine,
   stockEngine,
@@ -58,7 +67,9 @@ export type AdminSubView =
   | 'customers'
   | 'users'
   | 'logs'
-  | 'settings';
+  | 'settings'
+  | 'cms'
+  | 'media';
 
 interface ToastNotification {
   id: string;
@@ -90,6 +101,10 @@ interface RestaurantContextType {
   currentSession: UserSession | null;
   authenticateUser: (identifier: string, secret: string) => { success: boolean; user?: User; error?: string };
   authenticateAdmin: (pin: string) => boolean;
+  signInWithFirebase: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  registerWithFirebase: (email: string, pass: string, name: string, role: UserRole) => Promise<{ success: boolean; error?: string }>;
+  sendPasswordReset: (email: string) => Promise<{ success: boolean; message: string }>;
+  hasRolePermission: (action: PermissionAction) => boolean;
   logoutUser: () => void;
   lockAdminSession: () => void;
   updateAdminPin: (currentPin: string, newPin: string) => { success: boolean; message: string };
@@ -184,6 +199,10 @@ interface RestaurantContextType {
   updateProduct: (productId: string, updates: Partial<Product>, reason?: string) => boolean;
   updateProductPriceWithAudit: (productId: string, newPrice: number, reason?: string) => boolean;
   deleteProduct: (productId: string) => boolean;
+  duplicateProduct: (productId: string) => Product | null;
+  archiveProduct: (productId: string) => boolean;
+  toggleProductFeatured: (productId: string) => boolean;
+  toggleProductStatus: (productId: string) => boolean;
   createCategory: (category: Omit<Category, 'id'>) => Category | null;
   updateCategory: (categoryId: string, updates: Partial<Category>) => boolean;
   deleteCategory: (categoryId: string) => boolean;
@@ -210,6 +229,8 @@ interface RestaurantContextType {
     justification?: string,
     notes?: string
   ) => CashShift | null;
+  addCashSupply: (amount: number, reason: string) => boolean;
+  addCashBleed: (amount: number, reason: string) => boolean;
   getCashShiftSummary: () => {
     expectedCash: number;
     totalSales: number;
@@ -262,7 +283,122 @@ interface RestaurantContextType {
   resetAllData: () => void;
   showToast: (title: string, message?: string, type?: 'success' | 'warning' | 'error' | 'info') => void;
   removeToast: (id: string) => void;
+
+  // Content Management System (CMS) & Public Brand
+  siteSettings: SiteSettings;
+  homepageSections: HomepageSection[];
+  banners: Banner[];
+  contactMessages: ContactMessage[];
+  updateSiteSettings: (settings: Partial<SiteSettings>) => Promise<boolean>;
+  updateHomepageSection: (id: string, updates: Partial<HomepageSection>) => void;
+  createBanner: (banner: Omit<Banner, 'id'>) => Banner;
+  deleteBanner: (id: string) => void;
+  submitContactMessage: (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>) => Promise<boolean>;
+  updateContactMessageStatus: (id: string, status: 'UNREAD' | 'READ' | 'REPLIED' | 'ARCHIVED') => void;
+  // Media Library
+  mediaItems: MediaItem[];
+  refreshMediaLibrary: () => Promise<void>;
+  deleteMedia: (item: MediaItem) => Promise<boolean>;
 }
+
+const DEFAULT_SITE_SETTINGS: SiteSettings = {
+  id: 'main_config',
+  companyName: 'Bali Catering Service',
+  slogan: 'A Excelência da Gastronomia Grelhada no Carvão em Tete',
+  whatsappNumber: '+258843936605',
+  primaryPhone: '+258843936605',
+  email: 'contacto@balicateringservice.co.mz',
+  address: 'Bairro Mateus Sansão Muthemba, Estrada Nacional N7',
+  city: 'Tete',
+  province: 'Tete',
+  country: 'Moçambique',
+  businessHours: 'Segunda a Domingo: 10:00 às 22:30',
+  aboutUs: 'Fundado com a paixão pela autenticidade culinária moçambicana e internacional, o Bali Catering Service é a principal referência gastronómica de Tete. Combinamos temperos frescos, cortes nobres grelhados lentamente no carvão vegetal e um atendimento de excelência para eventos, banquetes e serviço de mesa.',
+  instagramUrl: 'https://instagram.com/balicateringservice',
+  facebookUrl: 'https://facebook.com/balicateringservice',
+  footerText: '© 2026 Bali Catering Service. Todos os direitos reservados. Tete, Moçambique.',
+  // Hero CMS Controls
+  heroTitle: 'Sabores Autênticos & Grelhados Nobres no Carvão',
+  heroSubtitle: 'A melhor experiência gastronómica e serviço de catering completo em Tete, Moçambique. Carnes selecionadas, pratos típicos e atendimento impecável.',
+  heroImageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1400&auto=format&fit=crop&q=85',
+  heroButtonText: 'Ver Cardápio & Pedir',
+  heroButtonLink: '#menu',
+  // Menu Products Section CMS Controls
+  menuSectionTitle: 'O Nosso Cardápio Selecionado',
+  menuSectionDescription: 'Pratos confeccionados no momento com ingredientes frescos e braseiro a carvão vegetal.',
+  // About Section CMS Controls
+  aboutTitle: 'A Nossa História de Paixão Culinária',
+  aboutDescription: 'Fundado com a missão de elevar a gastronomia em Tete, o Bali Catering Service combina mestria no braseiro, tradição culinária e serviços de catering para banquetes e eventos inesquecíveis.',
+  aboutImageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1000&auto=format&fit=crop&q=85',
+  // SEO & OpenGraph Controls
+  seoTitle: 'Bali Catering Service | Restaurante & Catering em Tete',
+  seoMetaDescription: 'Melhor restaurante e catering em Tete, Moçambique. Frango assado no braseiro, carnes nobres grelhadas, dobrada tradicional e buffets para eventos.',
+  seoKeywords: 'catering tete, restaurante tete, grelhados no carvao, frango assado tete, buffets eventos tete',
+  seoOgTitle: 'Bali Catering Service - Gastronomia de Excelência em Tete',
+  seoOgDescription: 'Encomende online ou reserve o melhor serviço de catering para o seu evento em Tete.',
+  seoOgImageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1200&auto=format&fit=crop&q=85',
+  copyrightText: '© 2026 Bali Catering Service. Todos os direitos reservados. Tete, Moçambique.',
+  defaultDeliveryFee: 150,
+  updatedAt: new Date().toISOString(),
+};
+
+const DEFAULT_BANNERS: Banner[] = [
+  {
+    id: 'banner-1',
+    title: 'Grelhados Nobres no Carvão Vegetal',
+    subtitle: 'Frango assado dourado, costeletas suculentas e bife especial servidos com acompanhamentos frescos.',
+    imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1400&auto=format&fit=crop&q=85',
+    buttonText: 'Explorar Cardápio',
+    buttonLink: '#menu',
+    isActive: true,
+    displayOrder: 1,
+  },
+  {
+    id: 'banner-2',
+    title: 'Catering Completo para Empresas e Eventos',
+    subtitle: 'Buffets corporativos, casamentos e confraternizações em toda a província de Tete.',
+    imageUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1400&auto=format&fit=crop&q=85',
+    buttonText: 'Solicitar Orçamento',
+    buttonLink: '#catering-contact',
+    isActive: true,
+    displayOrder: 2,
+  },
+];
+
+const DEFAULT_HOMEPAGE_SECTIONS: HomepageSection[] = [
+  {
+    id: 'sec-specialties',
+    key: 'specialties',
+    title: 'Nossas Especialidades da Casa',
+    subtitle: 'Pratos lendários preparados diariamente com os melhores insumos de Tete.',
+    displayOrder: 1,
+    isActive: true,
+  },
+  {
+    id: 'sec-menu',
+    key: 'menu',
+    title: 'Cardápio & Pedidos Rápidos',
+    subtitle: 'Escolha os seus pratos favoritos e envie o pedido diretamente via WhatsApp ou balcão.',
+    displayOrder: 2,
+    isActive: true,
+  },
+  {
+    id: 'sec-about',
+    key: 'about',
+    title: 'A Tradição do Bali Catering Service',
+    subtitle: 'Mais de uma década servindo com padrão internacional na cidade de Tete.',
+    displayOrder: 3,
+    isActive: true,
+  },
+  {
+    id: 'sec-catering',
+    key: 'catering',
+    title: 'Serviço de Catering & Encomendas para Eventos',
+    subtitle: 'Atendimento personalizado para celebrações corporativas e familiares com estrutura completa.',
+    displayOrder: 4,
+    isActive: true,
+  },
+];
 
 const RestaurantContext = createContext<RestaurantContextType | undefined>(undefined);
 
@@ -283,7 +419,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return users.find((u) => u.id === currentSession.userId && u.status === 'ACTIVE') || null;
   }, [currentSession, users]);
 
-  const isAdminAuthenticated: boolean = currentUser !== null && currentUser.role === 'ADMIN';
+  const isAdminAuthenticated: boolean =
+    currentUser !== null && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN');
+
+  // Media items state
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
 
   // Authorized Action Modal State
   const [isAuthorizedModalOpen, setIsAuthorizedModalOpen] = useState(false);
@@ -328,6 +468,12 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const unreadAlertsCount = React.useMemo(() => {
     return securityAlerts.filter((a) => !a.isRead && !a.isDismissed).length;
   }, [securityAlerts]);
+
+  // CMS State
+  const [siteSettings, setSiteSettings] = useState<SiteSettings>(DEFAULT_SITE_SETTINGS);
+  const [homepageSections, setHomepageSections] = useState<HomepageSection[]>(DEFAULT_HOMEPAGE_SECTIONS);
+  const [banners, setBanners] = useState<Banner[]>(DEFAULT_BANNERS);
+  const [contactMessages, setContactMessages] = useState<ContactMessage[]>([]);
 
   // Backup, Recovery & Cloud Synchronization State
   const [backupPoints, setBackupPoints] = useState<BackupPoint[]>(() =>
@@ -377,6 +523,42 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   }, []);
 
   // Periodic Automated Backup Interval (Every 5 minutes)
+  useEffect(() => {
+    // Non-destructive initial sync with Cloud Firestore
+    const initFirestoreSync = async () => {
+      try {
+        const isConnected = await testFirestoreConnection();
+        if (isConnected) {
+          const remoteSettings = await firestoreService.getSiteSettings();
+          if (remoteSettings) {
+            setSiteSettings(remoteSettings);
+          }
+
+          const remoteProducts = await firestoreService.getProducts();
+          if (remoteProducts && remoteProducts.length > 0) {
+            setProducts((prev) => {
+              const remoteIds = new Set(remoteProducts.map((p) => p.id));
+              const localOnly = prev.filter((p) => !remoteIds.has(p.id));
+              return [...remoteProducts, ...localOnly];
+            });
+          }
+
+          const remoteOrders = await firestoreService.getOrders();
+          if (remoteOrders && remoteOrders.length > 0) {
+            setOrders((prev) => {
+              const remoteIds = new Set(remoteOrders.map((o) => o.id));
+              const localOnly = prev.filter((o) => !remoteIds.has(o.id));
+              return [...remoteOrders, ...localOnly];
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Initial Firestore sync completed with notice:', err);
+      }
+    };
+
+    initFirestoreSync();
+  }, []);
   useEffect(() => {
     const interval = setInterval(async () => {
       setIsAutoBackupRunning(true);
@@ -568,6 +750,105 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
+  // Firebase Authentication Integration
+  const signInWithFirebase = async (email: string, pass: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await authService.signInWithEmail(email, pass);
+      if (res.user) {
+        // Upsert user in local list
+        setUsers((prev) => {
+          const exists = prev.some((u) => u.id === res.user.id || u.email === res.user.email);
+          if (exists) {
+            return prev.map((u) => (u.id === res.user.id || u.email === res.user.email ? { ...u, ...res.user } : u));
+          }
+          return [...prev, res.user];
+        });
+
+        // Create persistent session
+        const now = new Date();
+        const newSession: UserSession = {
+          sessionId: 'SES-FB-' + Date.now(),
+          userId: res.user.id,
+          username: res.user.username,
+          name: res.user.name,
+          role: res.user.role,
+          status: 'ACTIVE',
+          loginTime: now.toISOString(),
+          lastActivityTime: now.toISOString(),
+          expiresAt: new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString(),
+        };
+
+        setCurrentSession(newSession);
+        storageEngine.saveSession(newSession);
+        setActiveViewState('admin');
+        setIsAuthModalOpen(false);
+
+        logAudit(
+          'Login Firebase Auth',
+          'AUTH',
+          res.user.email || res.user.username,
+          `Autenticação bem-sucedida via Firebase Auth como ${res.user.role} (${res.user.name}).`,
+          `${res.user.role} (${res.user.name})`,
+          res.user.id,
+          res.user.role,
+          undefined,
+          undefined,
+          'SUCCESS'
+        );
+
+        showToast(
+          'Autenticado com Sucesso',
+          `Bem-vindo, ${res.user.name}! Nível de acesso: ${res.user.role}.`
+        );
+        return { success: true };
+      } else {
+        return { success: false, error: res.error || 'Credenciais inválidas no Firebase Auth.' };
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Falha ao autenticar no Firebase.' };
+    }
+  };
+
+  const registerWithFirebase = async (
+    email: string,
+    pass: string,
+    name: string,
+    role: UserRole
+  ): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await authService.registerUser(email, pass, name, role);
+      if (res.user) {
+        setUsers((prev) => [...prev, res.user]);
+        logAudit(
+          'Registo de Novo Administrador/Utilizador',
+          'USER',
+          res.user.email || res.user.username,
+          `Utilizador registado no Firebase Auth como ${res.user.role}.`
+        );
+        showToast('Utilizador Registado', `Conta criada para ${name} com sucesso.`);
+        return { success: true };
+      } else {
+        return { success: false, error: res.error };
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const sendPasswordReset = async (email: string): Promise<{ success: boolean; message: string }> => {
+    const res = await authService.sendPasswordReset(email);
+    if (res.success) {
+      showToast('Email Enviado', res.message);
+    } else {
+      showToast('Erro no Envio', res.message, 'error');
+    }
+    return res;
+  };
+
+  const hasRolePermission = (action: PermissionAction): boolean => {
+    return hasPermission(currentUser?.role, action);
+  };
+
   // Backward compatible authenticateAdmin (authenticates admin user)
   const authenticateAdmin = (pin: string): boolean => {
     const result = authenticateUser('admin', pin);
@@ -586,6 +867,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         currentUser.role
       );
     }
+    authService.signOut();
     setCurrentSession(null);
     storageEngine.clearSession();
     setActiveViewState('public');
@@ -948,6 +1230,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       prev.map((item) => (item.id === ingredientId ? movementResult.updatedIngredient : item))
     );
     setStockMovements((prev) => [movementResult.movement, ...prev]);
+    firestoreService.logStockMovement(movementResult.movement);
 
     // Anomaly trigger for large or waste stock adjustments
     if (movementResult.movement.quantity >= 50 || type === 'EXIT_WASTE') {
@@ -1005,6 +1288,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const { order, updatedIngredients, generatedMovements, newPayment, updatedCustomers, auditLog } = txResult.data;
 
     setOrders((prev) => [order, ...prev]);
+    firestoreService.saveOrder(order);
 
     if (updatedIngredients) {
       setIngredients(updatedIngredients);
@@ -1103,18 +1387,17 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       setStockMovements((prev) => [...newMovements, ...prev]);
     }
 
+    const updatedOrder = {
+      ...order,
+      status: newStatus,
+      stockDeducted: stockWasDeducted,
+      updatedAt: new Date().toISOString(),
+    };
+
     setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: newStatus,
-              stockDeducted: stockWasDeducted,
-              updatedAt: new Date().toISOString(),
-            }
-          : o
-      )
+      prev.map((o) => (o.id === orderId ? updatedOrder : o))
     );
+    firestoreService.saveOrder(updatedOrder);
 
     logAudit(
       'Alteração de Estado de Pedido',
@@ -1446,6 +1729,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
 
     setProducts((prev) => [newProd, ...prev]);
+    firestoreService.saveProduct(newProd);
     logAudit('Criação de Produto', 'PRODUCT', newProd.name, `Prato "${newProd.name}" cadastrado a ${newProd.price} MT.`);
     showToast('Prato Cadastrado', `${newProd.name} adicionado ao cardápio com sucesso.`);
     return newProd;
@@ -1504,6 +1788,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
 
     setProducts((prev) => prev.map((p) => (p.id === productId ? merged : p)));
+    firestoreService.saveProduct(merged);
     logAudit(
       'Atualização de Produto',
       'PRODUCT',
@@ -1640,9 +1925,93 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           : p
       )
     );
+    firestoreService.softDeleteProduct(productId);
 
     logAudit('Desativação de Produto (Soft Delete)', 'PRODUCT', target.name, `Prato "${target.name}" desativado do cardápio (histórico preservado).`);
     showToast('Produto Desativado', `"${target.name}" foi desativado (preservando histórico de vendas).`, 'info');
+    return true;
+  };
+
+  const duplicateProduct = (productId: string): Product | null => {
+    const original = products.find((p) => p.id === productId);
+    if (!original) return null;
+
+    const duplicated: Product = {
+      ...original,
+      id: 'prod-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      name: `${original.name} (Cópia)`,
+      slug: `${original.slug || original.name.toLowerCase().replace(/\s+/g, '-')}-copia`,
+      status: 'ACTIVE',
+      isAvailable: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setProducts((prev) => [duplicated, ...prev]);
+    firestoreService.saveProduct(duplicated);
+
+    logAudit(
+      'Duplicação de Produto',
+      'PRODUCT',
+      duplicated.name,
+      `Produto "${original.name}" duplicado para "${duplicated.name}".`
+    );
+    showToast('Produto Duplicado', `"${duplicated.name}" criado com sucesso.`);
+    return duplicated;
+  };
+
+  const archiveProduct = (productId: string): boolean => {
+    const target = products.find((p) => p.id === productId);
+    if (!target) return false;
+
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId
+          ? { ...p, status: 'ARCHIVED', isAvailable: false, updatedAt: new Date().toISOString() }
+          : p
+      )
+    );
+
+    firestoreService.updateProduct(productId, { status: 'ARCHIVED', isAvailable: false });
+    logAudit('Arquivamento de Produto', 'PRODUCT', target.name, `Produto "${target.name}" arquivado.`);
+    showToast('Produto Arquivado', `"${target.name}" movido para arquivo.`);
+    return true;
+  };
+
+  const toggleProductFeatured = (productId: string): boolean => {
+    const target = products.find((p) => p.id === productId);
+    if (!target) return false;
+
+    const newFeatured = !target.isFeatured;
+    setProducts((prev) =>
+      prev.map((p) => (p.id === productId ? { ...p, isFeatured: newFeatured } : p))
+    );
+
+    firestoreService.updateProduct(productId, { isFeatured: newFeatured });
+    showToast(
+      newFeatured ? 'Produto em Destaque' : 'Destaque Removido',
+      `"${target.name}" ${newFeatured ? 'agora está em destaque na página inicial.' : 'removido dos destaques.'}`
+    );
+    return true;
+  };
+
+  const toggleProductStatus = (productId: string): boolean => {
+    const target = products.find((p) => p.id === productId);
+    if (!target) return false;
+
+    const newAvailable = !target.isAvailable;
+    const newStatus = newAvailable ? 'ACTIVE' : 'INACTIVE';
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === productId ? { ...p, isAvailable: newAvailable, status: newStatus } : p
+      )
+    );
+
+    firestoreService.updateProduct(productId, { isAvailable: newAvailable, status: newStatus });
+    showToast(
+      newAvailable ? 'Produto Disponível' : 'Produto Indisponível',
+      `"${target.name}" ${newAvailable ? 'ativado para venda.' : 'marcado como esgotado/indisponível.'}`
+    );
     return true;
   };
 
@@ -2028,8 +2397,108 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       updatedShift.id,
       `Turno #${updatedShift.shiftNumber} fechado por ${performer}. Vendas: ${updatedShift.totalSalesAmount} MT. Dinheiro contado: ${cleanCounted} MT (Diferença: ${discrepancy} MT).`
     );
+
+    // Sincroniza com o servidor backend
+    fetch('/api/cash/close', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        countedCash: cleanCounted,
+        closedBy: performer,
+        justification,
+        notes,
+      }),
+    }).catch((err) => console.warn('Falha na sincronização do fecho de caixa:', err));
+
     showToast('Caixa Fechado com Sucesso', `Turno #${updatedShift.shiftNumber} finalizado.`);
     return updatedShift;
+  };
+
+  const addCashSupply = (amount: number, reason: string): boolean => {
+    if (!currentCashShift) {
+      showToast('Nenhum Caixa Aberto', 'Abra um turno de caixa antes de registrar suprimento.', 'warning');
+      return false;
+    }
+    const cleanAmount = Number(amount);
+    if (!cleanAmount || cleanAmount <= 0) {
+      showToast('Valor Inválido', 'Informe um valor positivo para o suprimento.', 'error');
+      return false;
+    }
+
+    const performer = currentUser ? `${currentUser.role} (${currentUser.name})` : 'Operador';
+    const updatedExpected = Number((currentCashShift.expectedCash + cleanAmount).toFixed(2));
+
+    setCashShifts((prev) =>
+      prev.map((s) => (s.id === currentCashShift.id ? { ...s, expectedCash: updatedExpected } : s))
+    );
+
+    logAudit(
+      'Suprimento de Caixa (Fundo Extra)',
+      'ORDER',
+      currentCashShift.id,
+      `Suprimento de ${cleanAmount} MT efetuado por ${performer}. Motivo: ${reason || 'Reforço de troco'}.`
+    );
+
+    fetch('/api/cash/supply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: cleanAmount,
+        reason: reason || 'Reforço de troco',
+        performedBy: performer,
+      }),
+    }).catch((err) => console.warn('Erro ao sincronizar suprimento:', err));
+
+    showToast('Suprimento Registado', `Adicionado ${cleanAmount} MT ao caixa.`);
+    return true;
+  };
+
+  const addCashBleed = (amount: number, reason: string): boolean => {
+    if (!currentCashShift) {
+      showToast('Nenhum Caixa Aberto', 'Abra um turno de caixa antes de registrar sangria.', 'warning');
+      return false;
+    }
+    const cleanAmount = Number(amount);
+    if (!cleanAmount || cleanAmount <= 0) {
+      showToast('Valor Inválido', 'Informe um valor positivo para a sangria.', 'error');
+      return false;
+    }
+
+    if (cleanAmount > currentCashShift.expectedCash) {
+      showToast(
+        'Saldo Insuficiente',
+        `Sangria de ${cleanAmount} MT excede o saldo esperado em dinheiro (${currentCashShift.expectedCash} MT).`,
+        'error'
+      );
+      return false;
+    }
+
+    const performer = currentUser ? `${currentUser.role} (${currentUser.name})` : 'Operador';
+    const updatedExpected = Number((currentCashShift.expectedCash - cleanAmount).toFixed(2));
+
+    setCashShifts((prev) =>
+      prev.map((s) => (s.id === currentCashShift.id ? { ...s, expectedCash: updatedExpected } : s))
+    );
+
+    logAudit(
+      'Sangria de Caixa (Retirada)',
+      'ORDER',
+      currentCashShift.id,
+      `Sangria de ${cleanAmount} MT efetuada por ${performer}. Motivo: ${reason || 'Recolha para cofre'}.`
+    );
+
+    fetch('/api/cash/bleed', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        amount: cleanAmount,
+        reason: reason || 'Recolha de segurança para cofre',
+        performedBy: performer,
+      }),
+    }).catch((err) => console.warn('Erro ao sincronizar sangria:', err));
+
+    showToast('Sangria Registada', `Retirado ${cleanAmount} MT do caixa.`);
+    return true;
   };
 
   const getCashShiftSummary = () => {
@@ -2403,6 +2872,74 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     window.location.reload();
   };
 
+  // CMS & Branding Management Functions
+  const updateSiteSettings = async (settings: Partial<SiteSettings>): Promise<boolean> => {
+    const updated = { ...siteSettings, ...settings, updatedAt: new Date().toISOString() };
+    setSiteSettings(updated);
+    const ok = await firestoreService.saveSiteSettings(updated);
+    return ok;
+  };
+
+  const updateHomepageSection = (id: string, updates: Partial<HomepageSection>) => {
+    setHomepageSections((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
+    );
+  };
+
+  const createBanner = (bannerData: Omit<Banner, 'id'>): Banner => {
+    const newBanner: Banner = {
+      ...bannerData,
+      id: `banner-${Date.now()}`,
+    };
+    setBanners((prev) => [newBanner, ...prev]);
+    return newBanner;
+  };
+
+  const deleteBanner = (id: string) => {
+    setBanners((prev) => prev.filter((b) => b.id !== id));
+  };
+
+  const submitContactMessage = async (msg: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>): Promise<boolean> => {
+    const newMsg: ContactMessage = {
+      ...msg,
+      id: `msg-${Date.now()}`,
+      status: 'UNREAD',
+      createdAt: new Date().toISOString(),
+    };
+    setContactMessages((prev) => [newMsg, ...prev]);
+    const ok = await firestoreService.sendContactMessage(msg);
+    showToast('Mensagem Enviada', 'A sua solicitação foi recebida com sucesso pela equipa do Bali Catering.');
+    return ok;
+  };
+
+  const updateContactMessageStatus = (id: string, status: 'UNREAD' | 'READ' | 'REPLIED' | 'ARCHIVED') => {
+    setContactMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, status } : m))
+    );
+  };
+
+  const refreshMediaLibrary = async () => {
+    try {
+      const items = await storageService.getMediaLibrary();
+      setMediaItems(items);
+    } catch (err) {
+      console.warn('Error loading media library:', err);
+    }
+  };
+
+  const deleteMedia = async (item: MediaItem): Promise<boolean> => {
+    const ok = await storageService.deleteMedia(item);
+    if (ok) {
+      setMediaItems((prev) => prev.filter((m) => m.id !== item.id));
+      showToast('Imagem Eliminada', `"${item.fileName}" foi removida da biblioteca.`);
+    }
+    return ok;
+  };
+
+  useEffect(() => {
+    refreshMediaLibrary();
+  }, []);
+
   return (
     <RestaurantContext.Provider
       value={{
@@ -2418,6 +2955,10 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         currentSession,
         authenticateUser,
         authenticateAdmin,
+        signInWithFirebase,
+        registerWithFirebase,
+        sendPasswordReset,
+        hasRolePermission,
         logoutUser,
         lockAdminSession,
         updateAdminPin,
@@ -2459,6 +3000,10 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         updateProduct,
         updateProductPriceWithAudit,
         deleteProduct,
+        duplicateProduct,
+        archiveProduct,
+        toggleProductFeatured,
+        toggleProductStatus,
         createCategory,
         updateCategory,
         deleteCategory,
@@ -2474,6 +3019,8 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         currentCashShift,
         openCashShift,
         closeCashShift,
+        addCashSupply,
+        addCashBleed,
         getCashShiftSummary,
         securityAlerts,
         unreadAlertsCount,
@@ -2495,6 +3042,19 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         resetAllData,
         showToast,
         removeToast,
+        siteSettings,
+        homepageSections,
+        banners,
+        contactMessages,
+        updateSiteSettings,
+        updateHomepageSection,
+        createBanner,
+        deleteBanner,
+        submitContactMessage,
+        updateContactMessageStatus,
+        mediaItems,
+        refreshMediaLibrary,
+        deleteMedia,
       }}
     >
       {children}

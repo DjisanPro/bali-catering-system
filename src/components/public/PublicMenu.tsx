@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { Product } from '../../types';
 import { formatMT } from '../../utils/formatters';
@@ -9,10 +10,13 @@ interface PublicMenuProps {
 }
 
 export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
-  const { categories, products, addToCart, setIsCartOpen } = useRestaurant();
+  const { categories, products, addToCart, setIsCartOpen, siteSettings } = useRestaurant();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [addedItemIds, setAddedItemIds] = useState<Record<string, boolean>>({});
+
+  const menuTitle = siteSettings?.menuSectionTitle || 'Escolha os seus pratos.';
+  const menuSubtitle = siteSettings?.menuSectionDescription || 'Feitos na hora com carnes selecionadas, pão fresco e temperos autênticos de Tete.';
 
   const handleAddToCart = (product: Product) => {
     addToCart(product, 1);
@@ -46,10 +50,10 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
             Cardápio Selecionado
           </span>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-black text-zinc-950 tracking-tight">
-            Escolha os seus pratos.
+            {menuTitle}
           </h2>
           <p className="text-xs sm:text-sm text-zinc-500 font-sans leading-relaxed">
-            Feitos na hora com carnes selecionadas, pão fresco e temperos autênticos de Tete.
+            {menuSubtitle}
           </p>
         </div>
 
@@ -57,7 +61,8 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-12">
           {/* Minimal Category Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedCategory('all')}
               className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
                 selectedCategory === 'all'
@@ -66,11 +71,12 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
               }`}
             >
               Todos ({products.length})
-            </button>
+            </motion.button>
 
             {categories.map((cat) => (
-              <button
+              <motion.button
                 key={cat.id}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap cursor-pointer ${
                   selectedCategory === cat.id
@@ -79,7 +85,7 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
                 }`}
               >
                 {cat.name}
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -120,11 +126,14 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
-            {filteredProducts.map((product) => {
+            {filteredProducts.map((product, index) => {
               const isAdded = addedItemIds[product.id];
               return (
-                <div
+                <motion.div
                   key={product.id}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: Math.min(index * 0.05, 0.3) }}
                   className="group flex flex-col justify-between bg-white text-left transition-all"
                 >
                   <div>
@@ -172,7 +181,8 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
 
                   {/* Clean CTA Button */}
                   <div className="pt-4 mt-auto">
-                    <button
+                    <motion.button
+                      whileTap={product.isAvailable ? { scale: 0.96 } : undefined}
                       onClick={() => handleAddToCart(product)}
                       disabled={!product.isAvailable}
                       className={`w-full py-3 rounded-full font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 ${
@@ -196,9 +206,9 @@ export const PublicMenu: React.FC<PublicMenuProps> = ({ onOpenCart }) => {
                           <span>Adicionar</span>
                         </>
                       )}
-                    </button>
+                    </motion.button>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>

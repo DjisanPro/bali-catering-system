@@ -14,6 +14,8 @@ import { CustomersView } from './CustomersView';
 import { UsersView } from './UsersView';
 import { AuditLogsView } from './AuditLogsView';
 import { SettingsView } from './SettingsView';
+import { CMSView } from './CMSView';
+import { MediaLibraryView } from './MediaLibraryView';
 
 export const AdminLayout: React.FC = () => {
   const { adminSubView } = useRestaurant();
@@ -44,6 +46,10 @@ export const AdminLayout: React.FC = () => {
         return <AuditLogsView />;
       case 'settings':
         return <SettingsView />;
+      case 'cms':
+        return <CMSView />;
+      case 'media':
+        return <MediaLibraryView />;
       default:
         return <DashboardView />;
     }

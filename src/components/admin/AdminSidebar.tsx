@@ -19,6 +19,8 @@ import {
   ShieldCheck,
   Store,
   LogOut,
+  Globe,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 export const AdminSidebar: React.FC = () => {
@@ -145,6 +147,20 @@ export const AdminSidebar: React.FC = () => {
       id: 'logs',
       label: 'Auditoria & Logs',
       icon: <History className="w-4 h-4" />,
+      restrictedForSeller: true,
+      group: 'system',
+    },
+    {
+      id: 'cms',
+      label: 'Website CMS & Conteúdo',
+      icon: <Globe className="w-4 h-4 text-emerald-600" />,
+      restrictedForSeller: true,
+      group: 'system',
+    },
+    {
+      id: 'media',
+      label: 'Biblioteca de Mídia',
+      icon: <ImageIcon className="w-4 h-4 text-sky-600" />,
       restrictedForSeller: true,
       group: 'system',
     },
