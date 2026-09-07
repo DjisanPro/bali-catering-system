@@ -306,4 +306,47 @@ export const stockEngine = {
       lowStockCount,
     };
   },
+
+  calculateProductStockAvailability(
+    product: Product,
+    ingredients: Ingredient[]
+  ): {
+    status: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+    maxPortions: number;
+    limitingIngredient?: string;
+  } {
+    if (!product.ingredients || product.ingredients.length === 0) {
+      return { status: 'IN_STOCK', maxPortions: 999 };
+    }
+
+    const ingMap = new Map(ingredients.map((i) => [i.id, i]));
+    let minPortions = Infinity;
+    let limitingName: string | undefined;
+
+    for (const item of product.ingredients) {
+      const ing = ingMap.get(item.ingredientId);
+      if (!ing) continue;
+      if (item.quantity <= 0) continue;
+
+      const portions = Math.max(0, Math.floor(ing.currentStock / item.quantity));
+      if (portions < minPortions) {
+        minPortions = portions;
+        limitingName = ing.name;
+      }
+    }
+
+    if (minPortions === Infinity) {
+      return { status: 'IN_STOCK', maxPortions: 999 };
+    }
+
+    if (minPortions <= 0) {
+      return { status: 'OUT_OF_STOCK', maxPortions: 0, limitingIngredient: limitingName };
+    }
+
+    if (minPortions <= 5) {
+      return { status: 'LOW_STOCK', maxPortions: minPortions, limitingIngredient: limitingName };
+    }
+
+    return { status: 'IN_STOCK', maxPortions: minPortions };
+  },
 };

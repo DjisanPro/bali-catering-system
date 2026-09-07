@@ -14,6 +14,10 @@ import { CustomersView } from './CustomersView';
 import { UsersView } from './UsersView';
 import { AuditLogsView } from './AuditLogsView';
 import { SettingsView } from './SettingsView';
+// CMSView abaixo temporariamente desativado: o arquivo de origem está
+// estruturalmente incompleto (refere estado não declarado). Será reconstruído
+// numa fase própria de QA/CMS e depois re-habilitado.
+import { MediaLibraryView } from './MediaLibraryView';
 
 export const AdminLayout: React.FC = () => {
   const { adminSubView } = useRestaurant();
@@ -44,6 +48,9 @@ export const AdminLayout: React.FC = () => {
         return <AuditLogsView />;
       case 'settings':
         return <SettingsView />;
+      // case 'cms': (desativado — CMSView em reconstrução)
+      case 'media':
+        return <MediaLibraryView />;
       default:
         return <DashboardView />;
     }

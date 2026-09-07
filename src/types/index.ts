@@ -17,6 +17,10 @@ export interface Category {
   iconName: string;
   description?: string;
   displayOrder: number;
+  status?: 'ACTIVE' | 'INACTIVE';
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
 }
 
 export interface RecipeIngredient {
@@ -34,24 +38,49 @@ export interface ProductPriceHistory {
   reason?: string;
 }
 
+export interface ProductImage {
+  id: string;
+  productId: string;
+  url: string;
+  altText?: string;
+  displayOrder: number;
+  isPrimary: boolean;
+  createdAt: string;
+}
+
 export interface Product {
   id: string;
   categoryId: string;
   name: string;
+  slug?: string;
+  shortDescription?: string;
   description: string;
+  fullDescription?: string;
   price: number; // in Meticais (MT)
+  promotionalPrice?: number; // Preço promocional em MT
   costPrice?: number; // Calculated or estimated
   imageUrl: string;
+  galleryImages?: string[];
   isAvailable: boolean;
-  status?: 'ACTIVE' | 'INACTIVE'; // Soft delete support
+  stock?: number;
+  unit?: UnitOfMeasure;
+  minQuantity?: number;
+  displayOrder?: number;
+  status?: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED'; // Soft delete and archiving support
   isDeleted?: boolean;
+  deletedAt?: string;
   isSpecialty?: boolean;
   isFeatured?: boolean;
+  featured?: boolean;
   isSeasonal?: boolean;
   availabilityDays?: string[]; // e.g., ['Domingo', 'Segunda'] for Dobrada
   preparationTimeMinutes: number;
+  additionalInfo?: string;
   ingredients: RecipeIngredient[];
   priceHistory?: ProductPriceHistory[];
+  createdAt?: string;
+  updatedAt?: string;
+  publishedAt?: string;
 }
 
 export interface Ingredient {
@@ -232,13 +261,14 @@ export interface SecurityAlert {
   metadata?: Record<string, any>;
 }
 
-export type UserRole = 'ADMIN' | 'SELLER';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'USER' | 'SELLER';
 
 export type UserStatus = 'ACTIVE' | 'INACTIVE';
 
 export interface User {
-  id: string; // e.g. "USR-ADMIN-01", "USR-VEND-01"
+  id: string; // e.g. "USR-SUPER-01", "USR-ADMIN-01", "USR-VEND-01"
   name: string;
+  email?: string;
   username: string;
   role: UserRole;
   status: UserStatus;
@@ -266,6 +296,16 @@ export interface UserSession {
 }
 
 export type PermissionAction =
+  | 'MANAGE_PRODUCTS'
+  | 'MANAGE_INVENTORY'
+  | 'MANAGE_ORDERS'
+  | 'MANAGE_CUSTOMERS'
+  | 'MANAGE_MEDIA'
+  | 'MANAGE_CMS'
+  | 'MANAGE_USERS'
+  | 'VIEW_ANALYTICS'
+  | 'VIEW_AUDIT_LOGS'
+  | 'MANAGE_SETTINGS'
   | 'VIEW_DASHBOARD'
   | 'VIEW_POS'
   | 'CREATE_ORDER'
@@ -296,8 +336,6 @@ export type PermissionAction =
   | 'CREATE_CUSTOMER'
   | 'UPDATE_CUSTOMER'
   | 'DELETE_CUSTOMER'
-  | 'VIEW_AUDIT_LOGS'
-  | 'MANAGE_USERS'
   | 'CREATE_USER'
   | 'UPDATE_USER'
   | 'DELETE_USER'
@@ -426,4 +464,166 @@ export interface CloudSyncState {
   pendingQueueCount: number;
   lastError?: string;
   totalCloudBackups: number;
+}
+
+// Enterprise Entities & CMS Structure
+export interface InventoryItem extends Ingredient {
+  slug?: string;
+  idealStock?: number;
+  location?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string;
+}
+
+export interface SiteSettings {
+  id?: string;
+  companyName: string;
+  tagline?: string;
+  slogan?: string;
+  phone?: string;
+  primaryPhone?: string;
+  whatsapp?: string;
+  whatsappNumber?: string;
+  secondaryPhone?: string;
+  email: string;
+  location?: string;
+  address?: string;
+  locationDetails?: string;
+  city?: string;
+  province?: string;
+  country?: string;
+  currency?: string;
+  socialMedia?: {
+    instagram?: string;
+    facebook?: string;
+    linkedin?: string;
+  };
+  instagramUrl?: string;
+  facebookUrl?: string;
+  openingHoursWeekday?: string;
+  openingHoursWeekend?: string;
+  openingHoursDetails?: string;
+  businessHours?: string;
+  logoUrl?: string;
+  faviconUrl?: string;
+  footerText?: string;
+  institutionalInfo?: string;
+  aboutText?: string;
+  aboutUs?: string;
+  mission?: string;
+  vision?: string;
+  // Hero Section CMS Controls
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroImageUrl?: string;
+  heroButtonText?: string;
+  heroButtonLink?: string;
+  // Menu Products Section CMS Controls
+  menuSectionTitle?: string;
+  menuSectionDescription?: string;
+  // About Section CMS Controls
+  aboutTitle?: string;
+  aboutDescription?: string;
+  aboutImageUrl?: string;
+  // Footer CMS Controls
+  footerLinks?: { label: string; url: string }[];
+  copyrightText?: string;
+  // SEO & Social OpenGraph Controls
+  seoTitle?: string;
+  seoMetaDescription?: string;
+  seoKeywords?: string;
+  seoOgTitle?: string;
+  seoOgDescription?: string;
+  seoOgImageUrl?: string;
+  defaultDeliveryFee?: number;
+  autoDeductStockOnConfirm?: boolean;
+  allowNegativeStock?: boolean;
+  specialNotice?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface HomepageSection {
+  id: string;
+  key: string;
+  title: string;
+  subtitle?: string;
+  content?: string;
+  imageUrl?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  displayOrder: number;
+  isVisible?: boolean;
+  isActive?: boolean;
+  status?: 'ACTIVE' | 'INACTIVE';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Banner {
+  id: string;
+  title: string;
+  subtitle?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  buttonLink?: string;
+  buttonText?: string;
+  displayOrder: number;
+  startDate?: string;
+  endDate?: string;
+  status?: 'ACTIVE' | 'INACTIVE';
+  isActive?: boolean;
+  isPublished?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MediaItem {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  fileSize: number; // In bytes
+  uploadedBy: string;
+  altText?: string;
+  width?: number;
+  height?: number;
+  mimeType?: string;
+  storagePath?: string;
+  createdAt: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  status: 'UNREAD' | 'READ' | 'REPLIED' | 'ARCHIVED';
+  notes?: string;
+  repliedAt?: string;
+  repliedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  code: UserRole;
+  description: string;
+  permissions: PermissionAction[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Permission {
+  id: string;
+  code: PermissionAction;
+  name: string;
+  module: string;
+  description: string;
 }

@@ -3,6 +3,7 @@ import { useRestaurant } from '../../context/RestaurantContext';
 import { RestaurantConfig, BackupPoint, BackupSource } from '../../types';
 import { formatMT } from '../../utils/formatters';
 import { BaliLogo } from '../common/BaliLogo';
+import { migrationUtility, MigrationReport } from '../../services/migrationUtility';
 import {
   Settings,
   Save,
@@ -30,6 +31,7 @@ import {
   Layers,
   ArrowDownToLine,
   Check,
+  Flame,
 } from 'lucide-react';
 
 export const SettingsView: React.FC = () => {
@@ -72,6 +74,10 @@ export const SettingsView: React.FC = () => {
   const [selectedBackupForRestore, setSelectedBackupForRestore] = useState<BackupPoint | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isCheckingCloud, setIsCheckingCloud] = useState(false);
+
+  // Firestore direct migration state
+  const [isMigratingFirestore, setIsMigratingFirestore] = useState(false);
+  const [migrationReport, setMigrationReport] = useState<MigrationReport | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -163,6 +169,26 @@ export const SettingsView: React.FC = () => {
       await verifyCloudStatus();
     } finally {
       setIsCheckingCloud(false);
+    }
+  };
+
+  const handleRunFirestoreMigration = async () => {
+    if (!confirm('Deseja iniciar a migração e sincronização de todos os dados locais (Produtos, Pedidos, Stock, Clientes e Configurações) para o Google Cloud Firestore? Esta ação não apaga dados remotos existentes.')) {
+      return;
+    }
+    setIsMigratingFirestore(true);
+    try {
+      const report = await migrationUtility.runFullMigration();
+      setMigrationReport(report);
+      if (report.success) {
+        showToast('Migração Concluída', `${report.productsMigrated} produtos e ${report.ordersMigrated} pedidos sincronizados no Firestore.`);
+      } else {
+        showToast('Migração Parcial', `Concluída com avisos. Verifique o relatório.`);
+      }
+    } catch (err: any) {
+      showToast('Falha na Migração', err?.message || 'Erro inesperado.');
+    } finally {
+      setIsMigratingFirestore(false);
     }
   };
 
@@ -551,6 +577,79 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Firebase Firestore Direct Cloud Persistence & Migration Panel */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-6 text-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                Google Cloud Firestore
+              </span>
+              <span className="text-slate-400">•</span>
+              <span className="text-[11px] text-slate-500 font-mono">gen-lang-client-0949843520</span>
+            </div>
+            <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2 font-heading mt-1">
+              <Flame className="w-5 h-5 text-[#F27D26]" />
+              <span>Base de Dados Persistente Firestore & Sincronização em Nuvem</span>
+            </h3>
+            <p className="text-slate-500 text-xs mt-0.5">
+              Garante que novos produtos, preços, stock, pedidos e clientes nunca se percam entre atualizações de código ou novos deploys.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleRunFirestoreMigration}
+            disabled={isMigratingFirestore}
+            className="px-5 py-2.5 rounded-xl bg-[#F27D26] hover:bg-orange-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${isMigratingFirestore ? 'animate-spin' : ''}`} />
+            <span>{isMigratingFirestore ? 'Migrando para Firestore...' : 'Sincronizar Dados Locais para o Firestore'}</span>
+          </button>
+        </div>
+
+        {/* Live Counters */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-bold uppercase text-slate-500 block">Produtos no Sistema</span>
+            <span className="text-lg font-black text-slate-900 font-heading">{products.length} itens</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-bold uppercase text-slate-500 block">Ingredientes / Stock</span>
+            <span className="text-lg font-black text-slate-900 font-heading">{ingredients.length} insumos</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-bold uppercase text-slate-500 block">Histórico de Pedidos</span>
+            <span className="text-lg font-black text-slate-900 font-heading">{orders.length} pedidos</span>
+          </div>
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-bold uppercase text-slate-500 block">Clientes Registados</span>
+            <span className="text-lg font-black text-slate-900 font-heading">{customers.length} clientes</span>
+          </div>
+        </div>
+
+        {/* Migration Report if executed */}
+        {migrationReport && (
+          <div className={`p-4 rounded-xl border ${migrationReport.success ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900' : 'bg-amber-50/70 border-amber-200 text-amber-900'} space-y-2`}>
+            <div className="flex items-center gap-2 font-bold text-xs">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>Relatório de Migração para o Firestore ({new Date(migrationReport.timestamp).toLocaleTimeString('pt-PT')})</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+              <div>• <strong>{migrationReport.productsMigrated}</strong> produtos enviados</div>
+              <div>• <strong>{migrationReport.ordersMigrated}</strong> pedidos gravados</div>
+              <div>• <strong>{migrationReport.customersMigrated}</strong> clientes guardados</div>
+              <div>• Definições CMS: <strong>{migrationReport.siteSettingsMigrated ? 'Sincronizadas' : 'Não alteradas'}</strong></div>
+            </div>
+            {migrationReport.errors.length > 0 && (
+              <div className="pt-2 border-t border-amber-200 text-amber-700 text-[10px]">
+                Avisos: {migrationReport.errors.join(' | ')}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Main Settings Form */}
       <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-2xs space-y-6 text-xs">

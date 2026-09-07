@@ -1,0 +1,401 @@
+{
+  "entities": {
+    "users": {
+      "title": "User",
+      "description": "System user account with role-based access control",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "username": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMIN", "SELLER"] },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "username", "role", "status", "createdAt"]
+    },
+    "roles": {
+      "title": "Role",
+      "description": "Role definition with assigned permissions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "code", "createdAt"]
+    },
+    "permissions": {
+      "title": "Permission",
+      "description": "Granular functional permission definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string" },
+        "module": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["id", "code", "name", "module"]
+    },
+    "products": {
+      "title": "Product",
+      "description": "Gastronomic or catering product offered by Bali Catering Service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "shortDescription": { "type": "string" },
+        "description": { "type": "string" },
+        "fullDescription": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "price": { "type": "number" },
+        "promotionalPrice": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "isAvailable": { "type": "boolean" },
+        "stock": { "type": "number" },
+        "unit": { "type": "string" },
+        "minQuantity": { "type": "number" },
+        "featured": { "type": "boolean" },
+        "displayOrder": { "type": "number" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "additionalInfo": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "publishedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "categoryId", "price", "isAvailable", "status", "createdAt"]
+    },
+    "categories": {
+      "title": "Category",
+      "description": "Product menu categories",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "iconName": { "type": "string" },
+        "description": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "slug", "displayOrder"]
+    },
+    "product_images": {
+      "title": "ProductImage",
+      "description": "Gallery image associated with a product",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "productId": { "type": "string" },
+        "url": { "type": "string" },
+        "altText": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "isPrimary": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "productId", "url", "isPrimary", "createdAt"]
+    },
+    "inventory": {
+      "title": "InventoryItem",
+      "description": "Raw ingredient or supply item in inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "unit": { "type": "string" },
+        "currentStock": { "type": "number" },
+        "minimumStock": { "type": "number" },
+        "costPerUnit": { "type": "number" },
+        "supplier": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "unit", "currentStock", "minimumStock", "costPerUnit"]
+    },
+    "inventory_movements": {
+      "title": "InventoryMovement",
+      "description": "Audit-logged stock movement entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ingredientId": { "type": "string" },
+        "ingredientName": { "type": "string" },
+        "unit": { "type": "string" },
+        "type": { "type": "string", "enum": ["ENTRY", "EXIT_ORDER", "EXIT_WASTE", "ADJUSTMENT"] },
+        "quantity": { "type": "number" },
+        "previousStock": { "type": "number" },
+        "newStock": { "type": "number" },
+        "reason": { "type": "string" },
+        "observation": { "type": "string" },
+        "referenceOrderId": { "type": "string" },
+        "performedBy": { "type": "string" },
+        "authorizedBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "ingredientId", "type", "quantity", "previousStock", "newStock", "reason", "performedBy", "createdAt"]
+    },
+    "orders": {
+      "title": "Order",
+      "description": "Customer order or catering booking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderNumber": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "customerAddress": { "type": "string" },
+        "orderType": { "type": "string", "enum": ["DINE_IN", "TAKEAWAY", "DELIVERY", "EVENT_CATERING"] },
+        "status": { "type": "string", "enum": ["PENDING", "CONFIRMED", "PREPARING", "READY", "COMPLETED", "CANCELLED"] },
+        "subtotal": { "type": "number" },
+        "deliveryFee": { "type": "number" },
+        "discount": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentStatus": { "type": "string", "enum": ["PENDING", "PAID", "PARTIALLY_PAID"] },
+        "paymentMethod": { "type": "string", "enum": ["CASH", "MPESA", "EMOLA", "POS_CARD", "BANK_TRANSFER"] },
+        "paymentReference": { "type": "string" },
+        "notes": { "type": "string" },
+        "stockDeducted": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "orderNumber", "customerName", "customerPhone", "orderType", "status", "total", "createdAt"]
+    },
+    "order_items": {
+      "title": "OrderItem",
+      "description": "Line item inside a customer order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "orderId": { "type": "string" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "price": { "type": "number" },
+        "quantity": { "type": "number" },
+        "subtotal": { "type": "number" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "orderId", "productId", "productName", "price", "quantity"]
+    },
+    "customers": {
+      "title": "Customer",
+      "description": "Customer entity for order history and CRM",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "notes": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"] },
+        "totalOrders": { "type": "number" },
+        "totalSpent": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "createdAt"]
+    },
+    "site_settings": {
+      "title": "SiteSettings",
+      "description": "Global CMS settings for brand, contact, and business policies",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyName": { "type": "string" },
+        "tagline": { "type": "string" },
+        "phone": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "email": { "type": "string" },
+        "location": { "type": "string" },
+        "locationDetails": { "type": "string" },
+        "currency": { "type": "string" },
+        "openingHoursWeekday": { "type": "string" },
+        "openingHoursWeekend": { "type": "string" },
+        "logoUrl": { "type": "string" },
+        "faviconUrl": { "type": "string" },
+        "footerText": { "type": "string" },
+        "institutionalInfo": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["companyName", "phone", "whatsapp", "email", "currency"]
+    },
+    "homepage_sections": {
+      "title": "HomepageSection",
+      "description": "Content block displayed on the public landing page",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "key": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "ctaText": { "type": "string" },
+        "ctaLink": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "isVisible": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "key", "title", "displayOrder", "isVisible"]
+    },
+    "banners": {
+      "title": "Banner",
+      "description": "Promotional banner for specials and events",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "linkUrl": { "type": "string" },
+        "displayOrder": { "type": "number" },
+        "isPublished": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["ACTIVE", "INACTIVE"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "imageUrl", "isPublished", "displayOrder"]
+    },
+    "media": {
+      "title": "MediaItem",
+      "description": "Uploaded media file record in Firebase Storage",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileUrl": { "type": "string" },
+        "fileType": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "uploadedBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "fileName", "fileUrl", "fileType", "uploadedBy", "createdAt"]
+    },
+    "contact_messages": {
+      "title": "ContactMessage",
+      "description": "Inquiry or contact form submission from customers",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["UNREAD", "READ", "REPLIED", "ARCHIVED"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "deletedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "phone", "message", "status", "createdAt"]
+    },
+    "audit_logs": {
+      "title": "AuditLog",
+      "description": "Immutable audit record for compliance and security",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "entity": { "type": "string" },
+        "entityId": { "type": "string" },
+        "description": { "type": "string" },
+        "user": { "type": "string" },
+        "userId": { "type": "string" },
+        "userRole": { "type": "string" },
+        "result": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "action", "entity", "entityId", "description", "user", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "Authorized staff and admin user profiles"
+    },
+    "/roles/{roleId}": {
+      "schema": "roles",
+      "description": "RBAC roles definitions"
+    },
+    "/permissions/{permissionId}": {
+      "schema": "permissions",
+      "description": "System granular permissions catalog"
+    },
+    "/products/{productId}": {
+      "schema": "products",
+      "description": "Menu and catering dishes with full commercial attributes"
+    },
+    "/products/{productId}/images/{imageId}": {
+      "schema": "product_images",
+      "description": "Gallery images subcollection per product"
+    },
+    "/categories/{categoryId}": {
+      "schema": "categories",
+      "description": "Categories for menu categorization"
+    },
+    "/inventory/{inventoryId}": {
+      "schema": "inventory",
+      "description": "Raw ingredients and stock items"
+    },
+    "/inventory_movements/{movementId}": {
+      "schema": "inventory_movements",
+      "description": "Traceable inventory entry, exit, and adjustment logs"
+    },
+    "/orders/{orderId}": {
+      "schema": "orders",
+      "description": "Customer orders, status lifecycle and payment references"
+    },
+    "/orders/{orderId}/items/{itemId}": {
+      "schema": "order_items",
+      "description": "Individual items inside a specific order"
+    },
+    "/customers/{customerId}": {
+      "schema": "customers",
+      "description": "Customer CRM profiles and order aggregation"
+    },
+    "/site_settings/{settingId}": {
+      "schema": "site_settings",
+      "description": "CMS settings for restaurant information, branding, and contact"
+    },
+    "/homepage_sections/{sectionId}": {
+      "schema": "homepage_sections",
+      "description": "Customizable homepage narrative sections"
+    },
+    "/banners/{bannerId}": {
+      "schema": "banners",
+      "description": "Promotional and seasonal banners"
+    },
+    "/media/{mediaId}": {
+      "schema": "media",
+      "description": "Metadata for uploaded media files"
+    },
+    "/contact_messages/{messageId}": {
+      "schema": "contact_messages",
+      "description": "Customer inquiries received through public contact channels"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "audit_logs",
+      "description": "Immutable security and operations audit trail"
+    }
+  }
+}

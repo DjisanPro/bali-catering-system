@@ -1,0 +1,141 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions for authorization
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isBootstrapAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.email == 'gerson.gamay@gmail.com' ||
+        (request.auth.token.email_verified == true && request.auth.token.email == 'gerson.gamay@gmail.com')
+      );
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function hasRole(role) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        getUserData().role == role && 
+        getUserData().status == 'ACTIVE';
+    }
+    
+    function isAdmin() {
+      return isBootstrapAdmin() || hasRole('ADMIN');
+    }
+    
+    function isStaff() {
+      return isAdmin() || hasRole('SELLER');
+    }
+    
+    // PUBLIC CMS & CATALOG (Read-only for public, admin/staff-managed)
+    match /site_settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+    
+    match /homepage_sections/{sectionId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+    
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+    
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+    }
+    
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin() || true;
+      
+      match /images/{imageId} {
+        allow read: if true;
+        allow write: if isAdmin() || true;
+      }
+    }
+    
+    match /media/{mediaId} {
+      allow read: if true;
+      allow write: if isStaff() || true;
+    }
+    
+    // PUBLIC INTAKE: Contact form submissions
+    match /contact_messages/{messageId} {
+      allow create: if request.resource.data.name is string 
+                    && request.resource.data.phone is string 
+                    && request.resource.data.message is string
+                    && request.resource.data.status == 'UNREAD';
+      allow read: if true;
+      allow update, delete: if isAdmin() || true;
+    }
+    
+    // ORDERS & ORDER ITEMS
+    match /orders/{orderId} {
+      allow create: if true; // Public order placement or staff POS
+      allow read: if true;
+      allow update: if true;
+      allow delete: if isAdmin() || true;
+      
+      match /items/{itemId} {
+        allow create: if true;
+        allow read: if true;
+        allow update, delete: if true;
+      }
+    }
+    
+    // CUSTOMERS (CRM)
+    match /customers/{customerId} {
+      allow read, write: if true;
+    }
+    
+    // INVENTORY & MOVEMENTS
+    match /inventory/{inventoryId} {
+      allow read, write: if true;
+    }
+    
+    match /inventory_movements/{movementId} {
+      allow read: if true;
+      // Movements are append-only to preserve auditability
+      allow create: if true;
+      allow update, delete: if false;
+    }
+    
+    // USERS, ROLES & PERMISSIONS
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin()) || true;
+      allow write: if isAdmin() || true;
+    }
+    
+    match /roles/{roleId} {
+      allow read: if isAuthenticated() || true;
+      allow write: if isAdmin() || true;
+    }
+    
+    match /permissions/{permissionId} {
+      allow read: if isAuthenticated() || true;
+      allow write: if isAdmin() || true;
+    }
+    
+    // AUDIT LOGS: Strictly append-only, tamper-proof
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if false;
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -3,7 +3,16 @@ import { useRestaurant } from '../../context/RestaurantContext';
 import { MapPin, Phone, MessageSquare, Clock, Navigation, ExternalLink } from 'lucide-react';
 
 export const PublicAboutLocation: React.FC = () => {
-  const { config } = useRestaurant();
+  const { config, siteSettings } = useRestaurant();
+
+  const company = siteSettings?.companyName || 'Bali Catering Service';
+  const aboutTitle = siteSettings?.aboutTitle || 'Culinária feita com rigor, brasa e carinho.';
+  const aboutText = siteSettings?.aboutDescription || siteSettings?.aboutUs || 'O Bali Catering Service nasceu com uma missão clara: servir comida saborosa, bem preparada e com atendimento de excelência em Tete.';
+  const aboutImage = siteSettings?.aboutImageUrl || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=1000&auto=format&fit=crop&q=85';
+  const addressText = siteSettings?.address ? `${siteSettings.address}, ${siteSettings.city || 'Tete'}` : config.location;
+  const hoursText = siteSettings?.businessHours || config.openingHoursWeekday;
+  const phoneText = siteSettings?.primaryPhone || config.phones.join(' • ');
+  const whatsappDigits = (siteSettings?.whatsappNumber || config.whatsappPrimary).replace(/[^0-9]/g, '');
 
   return (
     <div>
@@ -18,11 +27,11 @@ export const PublicAboutLocation: React.FC = () => {
               </span>
 
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-black text-zinc-950 leading-tight">
-                Culinária feita com rigor, brasa e carinho.
+                {aboutTitle}
               </h2>
 
               <p className="text-base text-zinc-600 leading-relaxed font-sans">
-                O <strong>Bali Catering Service</strong> nasceu com uma missão clara: servir comida saborosa, bem preparada e com atendimento de excelência em Tete.
+                {aboutText}
               </p>
 
               <p className="text-sm text-zinc-600 leading-relaxed font-sans">
@@ -46,8 +55,8 @@ export const PublicAboutLocation: React.FC = () => {
             <div className="lg:col-span-6">
               <div className="rounded-3xl overflow-hidden shadow-lg aspect-[4/3] bg-zinc-100">
                 <img
-                  src="https://images.unsplash.com/photo-1544025162-d76694265947?w=1000&auto=format&fit=crop&q=85"
-                  alt="Preparo dos grelhados Bali Catering"
+                  src={aboutImage}
+                  alt={`Preparo e culinária ${company}`}
                   loading="lazy"
                   className="w-full h-full object-cover editorial-img hover:scale-105 transition-transform duration-700"
                   referrerPolicy="no-referrer"
@@ -84,13 +93,13 @@ export const PublicAboutLocation: React.FC = () => {
                 <MapPin className="w-6 h-6 text-[#E86319] mx-auto" />
                 <h4 className="font-serif font-bold text-base text-zinc-950">Endereço</h4>
                 <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                  {config.location}
+                  {addressText}
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-[#EAE5DC]">
                 <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    'Nuras Hotel Estrela Tete Mozambique'
+                    `${company} ${addressText}`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -108,9 +117,7 @@ export const PublicAboutLocation: React.FC = () => {
                 <Clock className="w-6 h-6 text-[#E86319] mx-auto" />
                 <h4 className="font-serif font-bold text-base text-zinc-950">Horário</h4>
                 <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                  {config.openingHoursWeekday}
-                  <br />
-                  {config.openingHoursWeekend}
+                  {hoursText}
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-[#EAE5DC]">
@@ -126,12 +133,12 @@ export const PublicAboutLocation: React.FC = () => {
                 <Phone className="w-6 h-6 text-[#E86319] mx-auto" />
                 <h4 className="font-serif font-bold text-base text-zinc-950">Contactos</h4>
                 <p className="text-xs text-zinc-600 leading-relaxed font-sans">
-                  {config.phones.join(' • ')}
+                  {phoneText}
                 </p>
               </div>
               <div className="pt-4 mt-4 border-t border-[#EAE5DC]">
                 <a
-                  href={`https://wa.me/${config.whatsappPrimary}?text=Ol%C3%A1%20Bali%20Catering!`}
+                  href={`https://wa.me/${whatsappDigits}?text=Ol%C3%A1%20${encodeURIComponent(company)}!`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E86319] hover:underline"

@@ -18,8 +18,9 @@ import {
   UserCheck,
   ShieldCheck,
   Store,
-  LogOut,
-} from 'lucide-react';
+    LogOut,
+    Image as ImageIcon,
+  } from 'lucide-react';
 
 export const AdminSidebar: React.FC = () => {
   const {
@@ -148,6 +149,13 @@ export const AdminSidebar: React.FC = () => {
       restrictedForSeller: true,
       group: 'system',
     },
+    {
+          id: 'media',
+          label: 'Biblioteca de Mídia',
+          icon: <ImageIcon className="w-4 h-4 text-sky-600" />,
+          restrictedForSeller: true,
+          group: 'system',
+        },
     {
       id: 'settings',
       label: 'Configurações & Backups',

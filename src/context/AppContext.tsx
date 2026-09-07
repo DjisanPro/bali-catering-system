@@ -77,7 +77,8 @@ export type AdminSubView =
   | 'settings'
   | 'debts'
   | 'reports'
-  | 'cash';
+  | 'cash'
+  | 'media';
 
 interface ToastNotification {
   id: string;

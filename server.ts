@@ -2,6 +2,8 @@ import express from 'express';
 import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
+import cashRoutes from './server/routes/cash';
+import { supabaseService } from './server/services/supabase';
 
 interface CloudBackupRecord {
   id: string;
@@ -59,6 +61,25 @@ async function startServer() {
 
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+  // Cash and Shift routes
+  app.use('/api/cash', cashRoutes);
+
+  // Supabase Bridge status and test routes
+  app.get('/api/supabase/status', async (req, res) => {
+    const configured = supabaseService.isConfigured();
+    if (!configured) {
+      return res.json({
+        configured: false,
+        message: 'Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.',
+      });
+    }
+    const test = await supabaseService.testConnection();
+    res.json({
+      configured: true,
+      ...test,
+    });
+  });
 
   // API Routes
   app.get('/api/health', (req, res) => {
