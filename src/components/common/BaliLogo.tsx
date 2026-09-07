@@ -42,13 +42,13 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
         aria-label="Bali Catering Service Cloche Icon"
       >
         {/* Top Knob */}
-        <circle cx="100" cy="18" r="9" fill="#F27D26" />
-        <path d="M96 24 H104 V32 H96 Z" fill="#F27D26" />
+        <circle cx="100" cy="18" r="9" fill="#E86319" />
+        <path d="M96 24 H104 V32 H96 Z" fill="#E86319" />
 
         {/* Cloche Dome */}
         <path
           d="M24 130 C24 64, 60 30, 100 30 C140 30, 176 64, 176 130 Z"
-          fill="#F27D26"
+          fill="#E86319"
         />
 
         {/* Fork (Left) */}
@@ -90,7 +90,7 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
         </g>
 
         {/* Bottom Serving Tray / Base */}
-        <rect x="18" y="136" width="164" height="11" rx="5.5" fill="#F27D26" />
+        <rect x="18" y="136" width="164" height="11" rx="5.5" fill="#E86319" />
       </svg>
     );
   }
@@ -106,13 +106,13 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
           xmlns="http://www.w3.org/2000/svg"
         >
           {/* Top Knob */}
-          <circle cx="100" cy="18" r="9" fill="#F27D26" />
-          <path d="M96 24 H104 V32 H96 Z" fill="#F27D26" />
+          <circle cx="100" cy="18" r="9" fill="#E86319" />
+          <path d="M96 24 H104 V32 H96 Z" fill="#E86319" />
 
           {/* Cloche Dome */}
           <path
             d="M24 130 C24 64, 60 30, 100 30 C140 30, 176 64, 176 130 Z"
-            fill="#F27D26"
+            fill="#E86319"
           />
 
           {/* Fork */}
@@ -147,13 +147,13 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
           </g>
 
           {/* Tray */}
-          <rect x="18" y="136" width="164" height="11" rx="5.5" fill="#F27D26" />
+          <rect x="18" y="136" width="164" height="11" rx="5.5" fill="#E86319" />
         </svg>
 
         <div className="flex flex-col">
           <div className="flex items-center">
             {/* Custom Orange 'B' */}
-            <span className="text-[#F27D26] font-extrabold text-2xl font-serif leading-none italic -mr-0.5">
+            <span className="text-[#E86319] font-extrabold text-2xl font-serif leading-none italic -mr-0.5">
               B
             </span>
             {/* Dark oval 'a' */}
@@ -186,13 +186,13 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
     >
       {/* 1. CLOCHE & UTENSILS */}
       {/* Top Knob */}
-      <circle cx="120" cy="22" r="10" fill="#F27D26" />
-      <path d="M116 28 H124 V36 H116 Z" fill="#F27D26" />
+      <circle cx="120" cy="22" r="10" fill="#E86319" />
+      <path d="M116 28 H124 V36 H116 Z" fill="#E86319" />
 
       {/* Cloche Dome */}
       <path
         d="M40 136 C40 68, 78 35, 120 35 C162 35, 200 68, 200 136 Z"
-        fill="#F27D26"
+        fill="#E86319"
       />
 
       {/* Fork (Left) */}
@@ -227,7 +227,7 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
       </g>
 
       {/* Tray Base */}
-      <rect x="34" y="142" width="172" height="11" rx="5.5" fill="#F27D26" />
+      <rect x="34" y="142" width="172" height="11" rx="5.5" fill="#E86319" />
 
       {/* 2. "Bali" LOGOTYPE */}
       {/* Orange Calligraphic 'B' */}
@@ -235,12 +235,12 @@ export const BaliLogo: React.FC<BaliLogoProps> = ({
         {/* Top brush flourish */}
         <path
           d="M28 174 C40 162, 60 156, 76 160 C64 167, 54 172, 42 176 Z"
-          fill="#F27D26"
+          fill="#E86319"
         />
         {/* Main curved B body */}
         <path
           d="M48 168 C68 158, 88 166, 88 180 C88 190, 80 196, 70 198 C84 200, 94 212, 88 226 C82 238, 62 240, 52 236 C42 232, 48 218, 54 214 C64 218, 76 220, 78 214 C80 206, 72 202, 62 202 L54 202 C50 194, 52 184, 54 176 C64 174, 76 174, 76 182 C76 186, 72 188, 66 188 L58 188 C54 180, 50 174, 48 168 Z"
-          fill="#F27D26"
+          fill="#E86319"
         />
       </g>
 

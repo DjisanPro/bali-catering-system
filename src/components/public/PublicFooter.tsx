@@ -26,9 +26,9 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
   };
 
   return (
-    <footer className="bg-[#18181B] text-white pt-16 pb-12 border-t border-zinc-800">
+    <footer className="bg-[#1C1917] text-white pt-16 pb-12 border-t border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-zinc-800">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-white/10">
           {/* Brand and Tagline */}
           <div className="md:col-span-5 space-y-4">
             <BaliLogo variant="horizontal" size="sm" />

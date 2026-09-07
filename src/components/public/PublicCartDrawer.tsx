@@ -276,33 +276,36 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
                       </div>
                     </div>
 
-                    {/* Quantity Controls */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <div className="flex items-center bg-[#FAF8F5] border border-[#EAE5DC] rounded-full overflow-hidden">
-                        <button
-                          onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
-                          className="px-2 py-1 hover:bg-zinc-200 text-zinc-700 cursor-pointer"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="px-2 text-xs font-bold text-zinc-900 min-w-[18px] text-center font-sans">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
-                          className="px-2 py-1 hover:bg-zinc-200 text-zinc-700 cursor-pointer"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
+                    {/* Quantity Controls — com microinteração press */}
+                                        <div className="flex items-center gap-2 shrink-0">
+                                          <div className="flex items-center bg-[#FAF8F5] border border-[#EAE5DC] rounded-full overflow-hidden shadow-2xs">
+                                            <button
+                                              onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
+                                              className="px-2.5 py-1.5 hover:bg-[#E86319] hover:text-white text-zinc-700 transition-colors cursor-pointer active:scale-90"
+                                              aria-label="Diminuir quantidade"
+                                            >
+                                              <Minus className="w-3 h-3" />
+                                            </button>
+                                            <span className="px-2.5 text-xs font-bold text-zinc-900 min-w-[20px] text-center font-sans tabular-nums">
+                                              {item.quantity}
+                                            </span>
+                                            <button
+                                              onClick={() => updateCartQuantity(item.product.id, item.quantity + 1)}
+                                              className="px-2.5 py-1.5 hover:bg-[#E86319] hover:text-white text-zinc-700 transition-colors cursor-pointer active:scale-90"
+                                              aria-label="Aumentar quantidade"
+                                            >
+                                              <Plus className="w-3 h-3" />
+                                            </button>
+                                          </div>
 
-                      <button
-                        onClick={() => removeFromCart(item.product.id)}
-                        className="p-1.5 text-zinc-400 hover:text-red-600 rounded-full hover:bg-red-50 cursor-pointer"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                                          <button
+                                            onClick={() => removeFromCart(item.product.id)}
+                                            className="p-1.5 text-zinc-400 hover:text-red-600 rounded-full hover:bg-red-50 cursor-pointer active:scale-90 transition-all"
+                                            aria-label="Remover item"
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </div>
                   </div>
                 ))}
               </div>

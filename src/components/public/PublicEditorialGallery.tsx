@@ -94,7 +94,7 @@ const LazyEditorialImage: React.FC<{ item: GalleryItem; className?: string }> = 
 
 export const PublicEditorialGallery: React.FC = () => {
   return (
-    <section id="galeria" className="py-20 md:py-28 bg-[#FAF8F5] border-b border-[#EAE5DC]">
+    <section id="galeria" className="reveal py-20 md:py-28 bg-[#FAF8F5] border-b border-[#EAE5DC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">

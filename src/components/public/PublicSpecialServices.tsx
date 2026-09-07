@@ -34,7 +34,7 @@ export const PublicSpecialServices: React.FC = () => {
   ];
 
   return (
-    <section id="servicos" className="py-20 md:py-28 bg-[#FAF8F5] border-b border-[#EAE5DC]">
+    <section id="servicos" className="reveal py-20 md:py-28 bg-[#FAF8F5] border-b border-[#EAE5DC]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">

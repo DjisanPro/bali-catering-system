@@ -206,7 +206,7 @@ export const POSView: React.FC = () => {
                 onClick={() => setSelectedCategory(c.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold shrink-0 transition-all cursor-pointer ${
                   selectedCategory === c.id
-                    ? 'bg-[#F27D26] text-white shadow-2xs'
+                    ? 'bg-[#E86319] text-white shadow-2xs'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}
               >
@@ -240,7 +240,7 @@ export const POSView: React.FC = () => {
                       referrerPolicy="no-referrer"
                     />
                     {inTicket && (
-                      <span className="absolute top-1.5 right-1.5 bg-[#F27D26] text-white font-extrabold text-[11px] w-6 h-6 rounded-full flex items-center justify-center shadow-xs">
+                      <span className="absolute top-1.5 right-1.5 bg-[#E86319] text-white font-extrabold text-[11px] w-6 h-6 rounded-full flex items-center justify-center shadow-xs">
                         {inTicket.quantity}
                       </span>
                     )}
@@ -251,7 +251,7 @@ export const POSView: React.FC = () => {
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-xs font-black text-[#F27D26]">{formatMT(p.price)}</span>
+                  <span className="text-xs font-black text-[#E86319]">{formatMT(p.price)}</span>
                   <span className="text-[10px] text-slate-400 font-medium">
                     {p.preparationTimeMinutes}m
                   </span>
@@ -267,7 +267,7 @@ export const POSView: React.FC = () => {
         {/* Header */}
         <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-[#F27D26]" />
+            <Receipt className="w-4 h-4 text-[#E86319]" />
             <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
               Novo Pedido / Comanda
             </h3>
@@ -325,7 +325,7 @@ export const POSView: React.FC = () => {
           <div>
             <label className="block text-[11px] font-bold text-slate-700 mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-[#F27D26]" />
+                <User className="w-3.5 h-3.5 text-[#E86319]" />
                 <span>Nome do Cliente / Pedido (Autopreenchimento)</span>
               </span>
               {customerName && (
@@ -557,14 +557,14 @@ export const POSView: React.FC = () => {
             )}
             <div className="flex justify-between text-base font-black text-slate-900 pt-1 border-t border-slate-200">
               <span>Total:</span>
-              <span className="text-[#F27D26]">{formatMT(total)}</span>
+              <span className="text-[#E86319]">{formatMT(total)}</span>
             </div>
           </div>
 
           <button
             onClick={handleCheckout}
             disabled={ticketItems.length === 0}
-            className="w-full py-3 rounded-xl bg-[#F27D26] hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs shadow-md hover:shadow-orange-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3 rounded-xl bg-[#E86319] hover:bg-orange-600 disabled:bg-slate-200 disabled:text-slate-400 text-white font-bold text-xs shadow-md hover:shadow-orange-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
             <CheckCircle2 className="w-4 h-4" />
             <span>Registar Pedido & Emitir Comanda</span>

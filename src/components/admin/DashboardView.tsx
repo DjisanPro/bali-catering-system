@@ -23,44 +23,80 @@ export const DashboardView: React.FC = () => {
     setAdminSubView,
   } = useRestaurant();
 
-  // Computations
-  const totalRevenue = orders
-    .filter((o) => o.status !== 'CANCELLED' && o.paymentStatus === 'PAID')
-    .reduce((sum, o) => sum + o.total, 0);
+  // Computations — sempre derivadas de dados reais
+    // Defensive defaults: nunca renderizar .map() sobre undefined
+    const safeOrders = Array.isArray(orders) ? orders : [];
+    const safeProducts = Array.isArray(products) ? products : [];
+    const safeIngredients = Array.isArray(ingredients) ? ingredients : [];
+    const safePayments = Array.isArray(payments) ? payments : [];
+    const safeAuditLogs = Array.isArray(auditLogs) ? auditLogs : [];
 
-  const activeOrders = orders.filter(
-    (o) => o.status === 'PENDING' || o.status === 'PREPARING' || o.status === 'CONFIRMED'
-  );
+    const isSameDay = (iso: string | undefined, ref: Date): boolean => {
+      if (!iso) return false;
+      const d = new Date(iso);
+      return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+    };
 
-  const completedOrders = orders.filter((o) => o.status === 'DELIVERED');
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
 
-  const lowStockIngredients = ingredients.filter(
+    const completedPaid = safeOrders.filter(
+      (o) => o.status !== 'CANCELLED' && o.paymentStatus === 'PAID'
+    );
+
+    const todayRevenue = completedPaid
+      .filter((o) => isSameDay(o.createdAt, today))
+      .reduce((sum, o) => sum + o.total, 0);
+
+    const yesterdayRevenue = completedPaid
+      .filter((o) => isSameDay(o.createdAt, yesterday))
+      .reduce((sum, o) => sum + o.total, 0);
+
+    // Variação percentual real calculada (nunca número fixo)
+    const revenueDelta =
+      yesterdayRevenue > 0
+        ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100
+        : todayRevenue > 0
+        ? 100
+        : 0;
+    const revenueDeltaLabel = `${revenueDelta >= 0 ? '+' : ''}${revenueDelta.toFixed(1)}% vs ontem`;
+
+    const totalRevenue = completedPaid.reduce((sum, o) => sum + o.total, 0);
+
+    const activeOrders = safeOrders.filter(
+      (o) => o.status === 'PENDING' || o.status === 'PREPARING' || o.status === 'CONFIRMED'
+    );
+
+  const completedOrders = safeOrders.filter((o) => o.status === 'DELIVERED');
+
+  const lowStockIngredients = safeIngredients.filter(
     (i) => i.currentStock <= i.minimumStock
   );
 
   // Theoretical inventory value
-  const totalInventoryValue = ingredients.reduce((sum, i) => sum + (i.currentStock * i.costPerUnit), 0);
+  const totalInventoryValue = safeIngredients.reduce((sum, i) => sum + (i.currentStock * i.costPerUnit), 0);
 
   // Featured recipe for the sidebar card
-  const featuredProduct = products.find((p) => p.name.includes('Burger') || p.ingredients?.length > 0) || products[0];
+  const featuredProduct = safeProducts.find((p) => p.name.includes('Burger') || p.ingredients?.length > 0) || safeProducts[0];
 
   return (
     <div className="space-y-6">
       {/* 4 Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Stat 1: Revenue */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
-          <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-            Vendas de Hoje
-          </p>
-          <p className="text-2xl font-black text-slate-900 font-heading">
-            {formatMT(totalRevenue)}
-          </p>
-          <div className="flex items-center gap-1 mt-2 text-emerald-600 text-xs font-bold">
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>+12.5% vs ontem</span>
-          </div>
-        </div>
+                <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                    Vendas de Hoje
+                  </p>
+                  <p className="text-2xl font-black text-slate-900 font-heading">
+                    {formatMT(todayRevenue)}
+                  </p>
+                  <div className={`flex items-center gap-1 mt-2 text-xs font-bold ${revenueDelta >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {revenueDelta >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5 rotate-180" />}
+                    <span>{revenueDeltaLabel}</span>
+                  </div>
+                </div>
 
         {/* Stat 2: Active Orders */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
@@ -71,7 +107,7 @@ export const DashboardView: React.FC = () => {
             {activeOrders.length}
           </p>
           <p className="text-xs text-slate-500 mt-2 font-medium">
-            {orders.filter(o => o.status === 'PREPARING').length} em preparação na cozinha
+            {safeOrders.filter(o => o.status === 'PREPARING').length} em preparação na cozinha
           </p>
         </div>
 
@@ -108,14 +144,14 @@ export const DashboardView: React.FC = () => {
         <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200 shadow-xs flex flex-col">
           <div className="p-5 border-b border-slate-100 flex justify-between items-center">
             <h3 className="font-bold text-slate-800 flex items-center gap-2 font-heading">
-              <span className="w-2 h-2 rounded-full bg-[#F27D26]"></span>
+              <span className="w-2 h-2 rounded-full bg-[#E86319]"></span>
               Últimos Pedidos em Fila
             </h3>
             <button
               onClick={() => setAdminSubView('orders')}
-              className="text-xs font-bold text-[#F27D26] uppercase hover:underline"
+              className="text-xs font-bold text-[#E86319] uppercase hover:underline"
             >
-              Ver Tudo ({orders.length})
+              Ver Tudo ({safeOrders.length})
             </button>
           </div>
 
@@ -132,7 +168,7 @@ export const DashboardView: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="text-xs divide-y divide-slate-100">
-                {orders.slice(0, 5).map((order) => {
+                {safeOrders.slice(0, 5).map((order) => {
                   return (
                     <tr key={order.id} className="hover:bg-slate-50 transition-colors">
                       <td className="px-5 py-4 font-mono font-bold text-slate-900">
@@ -160,7 +196,7 @@ export const DashboardView: React.FC = () => {
                           </span>
                         )}
                         {order.status === 'PREPARING' && (
-                          <span className="px-2 py-1 bg-orange-100 text-[#F27D26] rounded-full font-bold text-[9px] uppercase">
+                          <span className="px-2 py-1 bg-orange-100 text-[#E86319] rounded-full font-bold text-[9px] uppercase">
                             Preparação
                           </span>
                         )}
@@ -192,7 +228,7 @@ export const DashboardView: React.FC = () => {
                         {order.status === 'CONFIRMED' && (
                           <button
                             onClick={() => updateOrderStatus(order.id, 'PREPARING')}
-                            className="px-2 py-1 bg-[#F27D26] hover:bg-orange-600 text-white rounded text-[10px] font-bold"
+                            className="px-2 py-1 bg-[#E86319] hover:bg-orange-600 text-white rounded text-[10px] font-bold"
                           >
                             Cozinhar
                           </button>
@@ -240,7 +276,7 @@ export const DashboardView: React.FC = () => {
             </h3>
 
             <div className="space-y-4">
-              {ingredients.slice(0, 3).map((ing, idx) => {
+              {safeIngredients.slice(0, 3).map((ing, idx) => {
                 const percentage = Math.min(100, Math.max(10, Math.round((ing.currentStock / (ing.minimumStock * 2)) * 100)));
                 const isCrit = ing.currentStock <= ing.minimumStock;
                 return (
@@ -251,7 +287,7 @@ export const DashboardView: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                          isCrit ? 'bg-red-50 text-red-500' : 'bg-orange-50 text-[#F27D26]'
+                          isCrit ? 'bg-red-50 text-red-500' : 'bg-orange-50 text-[#E86319]'
                         }`}
                       >
                         {ing.name.charAt(0)}
@@ -268,7 +304,7 @@ export const DashboardView: React.FC = () => {
                       </p>
                       <div className="w-16 h-1.5 bg-slate-100 rounded-full mt-1">
                         <div
-                          className={`h-full rounded-full ${isCrit ? 'bg-red-500' : 'bg-[#F27D26]'}`}
+                          className={`h-full rounded-full ${isCrit ? 'bg-red-500' : 'bg-[#E86319]'}`}
                           style={{ width: `${percentage}%` }}
                         ></div>
                       </div>
@@ -280,7 +316,7 @@ export const DashboardView: React.FC = () => {
 
             <button
               onClick={() => setAdminSubView('ingredients')}
-              className="w-full mt-4 py-2 bg-slate-50 text-[10px] font-bold uppercase text-slate-500 hover:text-[#F27D26] border border-slate-100 rounded transition-all text-center block"
+              className="w-full mt-4 py-2 bg-slate-50 text-[10px] font-bold uppercase text-slate-500 hover:text-[#E86319] border border-slate-100 rounded transition-all text-center block"
             >
               Gerir Todo o Estoque
             </button>
@@ -288,7 +324,7 @@ export const DashboardView: React.FC = () => {
 
           {/* Technical Sheet Showcase (Geometric Accent card) */}
           {featuredProduct && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 border-l-4 border-l-[#F27D26]">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5 border-l-4 border-l-[#E86319]">
               <h3 className="font-bold text-slate-800 text-sm mb-1 font-heading">
                 Ficha Técnica: {featuredProduct.name}
               </h3>
@@ -319,7 +355,7 @@ export const DashboardView: React.FC = () => {
 
               <button
                 onClick={() => setAdminSubView('recipes')}
-                className="w-full mt-3 py-2 bg-slate-50 text-[10px] font-bold uppercase text-slate-500 hover:text-[#F27D26] border border-slate-100 rounded transition-all"
+                className="w-full mt-3 py-2 bg-slate-50 text-[10px] font-bold uppercase text-slate-500 hover:text-[#E86319] border border-slate-100 rounded transition-all"
               >
                 Editar Composição / Fichas
               </button>
@@ -334,7 +370,7 @@ export const DashboardView: React.FC = () => {
           <span>
             Última Auditoria:{' '}
             <strong className="text-slate-600">
-              {auditLogs[0] ? auditLogs[0].action : 'Venda Concluída'}
+              {safeAuditLogs[0] ? safeAuditLogs[0].action : 'Venda Concluída'}
             </strong>{' '}
             (Estoque Actualizado)
           </span>

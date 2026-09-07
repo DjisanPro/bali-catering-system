@@ -68,7 +68,7 @@ export const AdminSidebar: React.FC = () => {
     {
       id: 'pos',
       label: 'Novo Pedido (PDV)',
-      icon: <PlusCircle className="w-4 h-4 text-[#F27D26]" />,
+      icon: <PlusCircle className="w-4 h-4 text-[#E86319]" />,
       group: 'operation',
     },
     {
@@ -76,7 +76,7 @@ export const AdminSidebar: React.FC = () => {
       label: 'Gestão de Pedidos',
       icon: <ShoppingBag className="w-4 h-4" />,
       badge: pendingOrdersCount > 0 ? pendingOrdersCount : undefined,
-      badgeColor: 'bg-orange-100 text-[#F27D26]',
+      badgeColor: 'bg-orange-100 text-[#E86319]',
       group: 'operation',
     },
     {
@@ -165,14 +165,14 @@ export const AdminSidebar: React.FC = () => {
       </div>
 
       {/* Navigation Groups */}
-      <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto scrollbar-thin">
-        {/* Group: Operação */}
-        <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          Atendimento & Balcão
-        </div>
-        {navItems
-          .filter((item) => item.group === 'operation')
-          .map((item) => {
+            <nav className="flex-1 py-3 px-3 space-y-1 overflow-y-auto scrollbar-thin">
+              {/* Group: Operação */}
+              <div className="px-3 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Atendimento & Balcão
+              </div>
+              {navItems
+                .filter((item) => item.group === 'operation' && (!isSeller || !item.restrictedForSeller))
+                .map((item) => {
             const isActive = adminSubView === item.id;
             const isRestricted = Boolean(isSeller && item.restrictedForSeller);
 
@@ -182,7 +182,7 @@ export const AdminSidebar: React.FC = () => {
                 onClick={() => handleNavClick(item.id, Boolean(item.restrictedForSeller))}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-orange-50 text-[#F27D26] shadow-2xs font-bold'
+                    ? 'bg-orange-50 text-[#E86319] shadow-2xs font-bold'
                     : isRestricted
                     ? 'text-slate-400 hover:bg-slate-50 hover:text-slate-600 opacity-60'
                     : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
@@ -209,14 +209,15 @@ export const AdminSidebar: React.FC = () => {
             );
           })}
 
-        {/* Group: Catálogo & Estoque */}
-        <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>Cardápio & Estoque</span>
-          {isSeller && <span className="text-[9px] text-slate-400 font-normal">Admin</span>}
-        </div>
-        {navItems
-          .filter((item) => item.group === 'catalog')
-          .map((item) => {
+        {/* Group: Cardápio & Estoque */}
+                {!isSeller && (
+                  <>
+                    <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                      <span>Cardápio & Estoque</span>
+                    </div>
+                    {navItems
+                      .filter((item) => item.group === 'catalog')
+                      .map((item) => {
             const isActive = adminSubView === item.id;
             const isRestricted = Boolean(isSeller && item.restrictedForSeller);
 
@@ -226,7 +227,7 @@ export const AdminSidebar: React.FC = () => {
                 onClick={() => handleNavClick(item.id, Boolean(item.restrictedForSeller))}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-orange-50 text-[#F27D26] shadow-2xs font-bold'
+                    ? 'bg-orange-50 text-[#E86319] shadow-2xs font-bold'
                     : isRestricted
                     ? 'text-slate-400 hover:bg-slate-50 hover:text-slate-500 opacity-50'
                     : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
@@ -249,18 +250,21 @@ export const AdminSidebar: React.FC = () => {
                     </span>
                   )}
                 </div>
-              </button>
-            );
-          })}
+                              </button>
+                            );
+                          })}
+                                  </>
+                                )}
 
-        {/* Group: Financeiro & Sistema */}
-        <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>Gestão & Segurança</span>
-          {isSeller && <span className="text-[9px] text-slate-400 font-normal">Admin</span>}
-        </div>
-        {navItems
-          .filter((item) => item.group === 'system')
-          .map((item) => {
+                        {/* Group: Financeiro & Sistema */}
+                                {!isSeller && (
+                                  <>
+                                    <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                                      <span>Gestão & Segurança</span>
+                                    </div>
+                                    {navItems
+                                      .filter((item) => item.group === 'system')
+                                      .map((item) => {
             const isActive = adminSubView === item.id;
             const isRestricted = Boolean(isSeller && item.restrictedForSeller);
 
@@ -270,7 +274,7 @@ export const AdminSidebar: React.FC = () => {
                 onClick={() => handleNavClick(item.id, Boolean(item.restrictedForSeller))}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-orange-50 text-[#F27D26] shadow-2xs font-bold'
+                    ? 'bg-orange-50 text-[#E86319] shadow-2xs font-bold'
                     : isRestricted
                     ? 'text-slate-400 hover:bg-slate-50 hover:text-slate-500 opacity-50'
                     : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
@@ -286,8 +290,10 @@ export const AdminSidebar: React.FC = () => {
                 </div>
               </button>
             );
-          })}
-      </nav>
+                      })}
+                      </>
+                    )}
+                  </nav>
 
       {/* Footer User Session & Profile */}
       <div className="p-3 border-t border-slate-100 space-y-2 bg-slate-50/50">
@@ -296,7 +302,7 @@ export const AdminSidebar: React.FC = () => {
             className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
               currentUser?.role === 'ADMIN'
                 ? 'bg-slate-900 text-white'
-                : 'bg-orange-100 text-[#F27D26] border border-orange-200'
+                : 'bg-orange-100 text-[#E86319] border border-orange-200'
             }`}
           >
             {currentUser?.role === 'ADMIN' ? (
@@ -329,7 +335,7 @@ export const AdminSidebar: React.FC = () => {
             className="py-2 px-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors border border-slate-200 cursor-pointer"
             title="Ver Website Público"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-[#F27D26]" />
+            <ExternalLink className="w-3.5 h-3.5 text-[#E86319]" />
             <span>Site</span>
           </button>
 

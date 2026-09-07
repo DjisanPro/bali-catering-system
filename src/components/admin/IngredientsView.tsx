@@ -166,7 +166,7 @@ export const IngredientsView: React.FC = () => {
             setSupplier('');
             setIsNewIngredientModalOpen(true);
           }}
-          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#F27D26] hover:bg-orange-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#E86319] hover:bg-orange-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
           <span>Novo Insumo / Matéria-Prima</span>
@@ -415,7 +415,7 @@ export const IngredientsView: React.FC = () => {
                     min="0"
                     value={costPerUnit}
                     onChange={(e) => setCostPerUnit(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-center font-bold text-[#F27D26]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-center font-bold text-[#E86319]"
                   />
                 </div>
               </div>
@@ -441,7 +441,7 @@ export const IngredientsView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#F27D26] hover:bg-orange-600 text-white font-bold shadow-xs cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#E86319] hover:bg-orange-600 text-white font-bold shadow-xs cursor-pointer"
                 >
                   {editingIngredient ? 'Salvar Alterações' : 'Cadastrar Insumo'}
                 </button>

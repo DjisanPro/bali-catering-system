@@ -95,8 +95,8 @@ export const ProductsView: React.FC = () => {
             Especialidades Bali
           </span>
           <div className="flex items-center justify-between mt-1">
-            <span className="text-xl font-black text-[#F27D26] font-heading">{specialtyCount}</span>
-            <Flame className="w-4 h-4 text-[#F27D26]" />
+            <span className="text-xl font-black text-[#E86319] font-heading">{specialtyCount}</span>
+            <Flame className="w-4 h-4 text-[#E86319]" />
           </div>
         </div>
 
@@ -187,7 +187,7 @@ export const ProductsView: React.FC = () => {
               setEditingProduct(null);
               setIsNewModalOpen(true);
             }}
-            className="px-4 py-2.5 rounded-xl bg-[#F27D26] hover:bg-orange-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-[#E86319] hover:bg-orange-600 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Novo Prato / Produto</span>
@@ -245,7 +245,7 @@ export const ProductsView: React.FC = () => {
                     <div>
                       <div className="flex items-center gap-1.5">
                         {product.isSpecialty && (
-                          <span className="bg-[#F27D26] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                          <span className="bg-[#E86319] text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                             Especialidade
                           </span>
                         )}
@@ -256,7 +256,7 @@ export const ProductsView: React.FC = () => {
                         )}
                       </div>
                       <p className="text-[11px] text-slate-200 mt-1 flex items-center gap-1">
-                        <Clock className="w-3 h-3 text-[#F27D26]" /> ~{product.preparationTimeMinutes} min
+                        <Clock className="w-3 h-3 text-[#E86319]" /> ~{product.preparationTimeMinutes} min
                       </p>
                     </div>
 
@@ -272,7 +272,7 @@ export const ProductsView: React.FC = () => {
                 {/* Content Body */}
                 <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                   <div>
-                    <h4 className="font-heading font-extrabold text-sm text-slate-900 leading-snug group-hover:text-[#F27D26] transition-colors">
+                    <h4 className="font-heading font-extrabold text-sm text-slate-900 leading-snug group-hover:text-[#E86319] transition-colors">
                       {product.name}
                     </h4>
                     <p className="text-[11px] text-slate-500 line-clamp-2 mt-1 leading-relaxed">
@@ -305,7 +305,7 @@ export const ProductsView: React.FC = () => {
                     <div>
                       <span className="text-[10px] text-slate-400 block font-bold">Ficha Técnica</span>
                       <span className="font-bold text-slate-700 flex items-center gap-1">
-                        <Layers className="w-3 h-3 text-[#F27D26]" />
+                        <Layers className="w-3 h-3 text-[#E86319]" />
                         {product.ingredients?.length || 0} itens
                       </span>
                     </div>
@@ -343,7 +343,7 @@ export const ProductsView: React.FC = () => {
                         onClick={() => setEditingProduct(product)}
                         className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
                       >
-                        <Edit2 className="w-3.5 h-3.5 text-[#F27D26]" />
+                        <Edit2 className="w-3.5 h-3.5 text-[#E86319]" />
                         <span>Editar</span>
                       </button>
                     </div>
@@ -394,7 +394,7 @@ export const ProductsView: React.FC = () => {
                             <div className="font-bold text-slate-900 flex items-center gap-1.5">
                               <span>{product.name}</span>
                               {product.isSpecialty && (
-                                <span className="bg-orange-100 text-[#F27D26] text-[9px] font-extrabold px-1.5 py-0.2 rounded">
+                                <span className="bg-orange-100 text-[#E86319] text-[9px] font-extrabold px-1.5 py-0.2 rounded">
                                   Especial
                                 </span>
                               )}
@@ -493,7 +493,7 @@ export const ProductsView: React.FC = () => {
                           className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg cursor-pointer"
                           title="Editar"
                         >
-                          <Edit2 className="w-3.5 h-3.5 text-[#F27D26]" />
+                          <Edit2 className="w-3.5 h-3.5 text-[#E86319]" />
                         </button>
                         <button
                           onClick={() => {

@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ============================================================
+   BALI CATERING SERVICE — DESIGN SYSTEM 2.0
+   ------------------------------------------------------------
+   Identity: fogo + carvão + brasa. Editorial warm, premium.
+   Paleta única: laranja Bali #E86319 (accent em TODO o sistema,
+   público E admin). Neutros quentes #FAF8F5 / #1C1917.
+   Tipografia: Playfair Display (display) + Plus Jakarta Sans (UI).
+   ============================================================ */
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -8,12 +17,13 @@
   body {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #FAF8F5;
-    color: #18181B;
-    letter-spacing: -0.012em;
+    color: #1C1917;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, .font-serif, .font-display {
+  h1, h2, h3, .font-serif, .font-display, .font-heading {
     font-family: 'Playfair Display', Georgia, Cambria, serif;
     letter-spacing: -0.02em;
   }
@@ -21,6 +31,662 @@
   .font-sans {
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
+
+  /* Numeric tabular for prices / data */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Better text wrapping */
+  p, h1, h2, h3, h4, h5, h6 {
+    text-wrap: pretty;
+  }
+
+  /* Focus visibility — WCAG */
+  :focus-visible {
+    outline: 2px solid #E86319;
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: #E86319;
+    color: #fff;
+  }
+}
+
+/* ============================================================
+   TOKENS — Design Tokens
+   ============================================================ */
+:root {
+  /* Brand */
+  --bali-primary: #E86319;
+  --bali-primary-hover: #C74F0E;
+  --bali-primary-soft: #FEF0E6;
+  --bali-accent: #B91C1C;
+  --bali-gold: #D97706;
+
+  /* Surfaces */
+  --bali-bg: #FAF8F5;
+  --bali-surface: #FFFFFF;
+  --bali-ink: #1C1917;
+  --bali-muted: #57534E;
+  --bali-border: #E7E5E4;
+
+  /* States */
+  --bali-ok: #059669;
+  --bali-warn: #D97706;
+  --bali-danger: #DC2626;
+  --bali-info: #2563EB;
+
+  /* Radii */
+  --bali-radius: 0.75rem;
+  --bali-radius-lg: 1rem;
+  --bali-radius-xl: 1.5rem;
+  --bali-radius-2xl: 2rem;
+
+  /* Shadows — tinted warm (no pure black) */
+  --bali-shadow-sm: 0 1px 2px 0 rgb(28 25 23 / 0.05);
+  --bali-shadow: 0 1px 3px 0 rgb(28 25 23 / 0.08), 0 1px 2px -1px rgb(28 25 23 / 0.06);
+  --bali-shadow-md: 0 4px 6px -1px rgb(28 25 23 / 0.08), 0 2px 4px -2px rgb(28 25 23 / 0.06);
+  --bali-shadow-lg: 0 10px 15px -3px rgb(28 25 23 / 0.1), 0 4px 6px -4px rgb(28 25 23 / 0.05);
+  --bali-shadow-cta: 0 8px 24px -6px rgb(232 99 25 / 0.35);
+
+  /* Typography scale */
+  --text-display: clamp(2.5rem, 5vw, 4.5rem);
+  --text-h1: clamp(2rem, 4vw, 3rem);
+  --text-h2: clamp(1.5rem, 2.5vw, 2.25rem);
+  --text-h3: 1.25rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  --text-caption: 0.75rem;
+  --text-label: 0.6875rem;
+
+  /* Spacing scale (4pt base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* Motion */
+  --ease-premium: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+  --duration-slower: 800ms;
+}
+
+/* ============================================================
+   MOTION — Reduced Motion (accessibility)
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Scroll reveal (used via IntersectionObserver adding .is-visible) */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity var(--duration-slow) var(--ease-spring),
+              transform var(--duration-slow) var(--ease-spring);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Stagger helper — child delay via inline style --d */
+.stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--duration-slow) var(--ease-spring) calc(var(--d, 0) * 80ms),
+              transform var(--duration-slow) var(--ease-spring) calc(var(--d, 0) * 80ms);
+}
+
+.stagger.is-visible > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Hover lift for cards */
+.lift {
+  transition: transform var(--duration-base) var(--ease-spring),
+              box-shadow var(--duration-base) var(--ease-spring);
+}
+
+.lift:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--bali-shadow-lg);
+}
+
+/* Press feedback */
+.press {
+  transition: transform var(--duration-fast) var(--ease-premium);
+}
+
+.press:active {
+  transform: scale(0.97);
+}
+
+/* ============================================================
+   ADMIN SHELL
+   ============================================================ */
+.bali-admin-shell {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  background: var(--bali-bg);
+  overflow: hidden;
+}
+
+.bali-admin-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===================== Sidebar ===================== */
+.bali-sidebar {
+  width: 256px;
+  flex-shrink: 0;
+  height: 100%;
+  background: #1C1917;
+  color: #E7E5E4;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.bali-sidebar-header {
+  padding: 1.25rem 1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.08);
+}
+
+.bali-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem;
+  margin: 0.125rem 0.5rem;
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #A8A29E;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  width: calc(100% - 1rem);
+  text-align: left;
+  border: none;
+  background: transparent;
+}
+
+.bali-nav-item:hover {
+  background: rgb(255 255 255 / 0.06);
+  color: #FFFFFF;
+}
+
+.bali-nav-item.active {
+  background: var(--bali-primary);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.bali-nav-section {
+  padding: 0.75rem 1.25rem 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #78716C;
+}
+
+/* ===================== Header ===================== */
+.bali-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--bali-border);
+  flex-shrink: 0;
+}
+
+.bali-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+  color: var(--bali-muted);
+}
+
+.bali-breadcrumb .crumb-current {
+  color: var(--bali-ink);
+  font-weight: 600;
+}
+
+/* ===================== Cards & Surfaces ===================== */
+.bali-card {
+  background: var(--bali-surface);
+  border: 1px solid var(--bali-border);
+  border-radius: var(--bali-radius-lg);
+  box-shadow: var(--bali-shadow);
+  padding: 1.25rem;
+}
+
+/* Double-Bezel premium card (outter shell + inner core) */
+.bali-shell {
+  padding: 0.375rem;
+  background: rgb(28 25 23 / 0.03);
+  border-radius: calc(var(--bali-radius-xl) + 0.375rem);
+  border: 1px solid rgb(28 25 23 / 0.06);
+}
+
+.bali-shell > .bali-core {
+  background: var(--bali-surface);
+  border-radius: var(--bali-radius-xl);
+  padding: 1.5rem;
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.6);
+}
+
+.bali-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.bali-card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--bali-ink);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.bali-card-subtitle {
+  font-size: 0.75rem;
+  color: var(--bali-muted);
+  margin-top: 0.125rem;
+}
+
+/* ===================== Stat Card ===================== */
+.bali-stat {
+  background: var(--bali-surface);
+  border: 1px solid var(--bali-border);
+  border-radius: var(--bali-radius-lg);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--bali-shadow);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-premium), box-shadow 0.2s var(--ease-premium);
+}
+
+.bali-stat:hover {
+  box-shadow: var(--bali-shadow-md);
+  transform: translateY(-2px);
+}
+
+.bali-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bali-muted);
+}
+
+.bali-stat-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--bali-ink);
+  margin-top: 0.25rem;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.bali-stat-hint {
+  font-size: 0.75rem;
+  color: var(--bali-muted);
+  margin-top: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+/* ===================== Buttons ===================== */
+.bali-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: transform var(--duration-fast) var(--ease-premium),
+              background-color var(--duration-base) var(--ease-premium),
+              box-shadow var(--duration-base) var(--ease-premium),
+              border-color var(--duration-base) var(--ease-premium);
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.bali-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.bali-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bali-btn-primary {
+  background: var(--bali-primary);
+  color: #FFFFFF;
+  box-shadow: var(--bali-shadow-cta);
+}
+
+.bali-btn-primary:hover:not(:disabled) {
+  background: var(--bali-primary-hover);
+  box-shadow: var(--bali-shadow-lg);
+  transform: translateY(-1px);
+}
+
+.bali-btn-secondary {
+  background: #FFFFFF;
+  color: var(--bali-ink);
+  border-color: var(--bali-border);
+}
+
+.bali-btn-secondary:hover:not(:disabled) {
+  background: #FAFAF9;
+}
+
+.bali-btn-danger {
+  background: var(--bali-danger);
+  color: #FFFFFF;
+}
+
+.bali-btn-danger:hover:not(:disabled) {
+  background: #B91C1C;
+}
+
+.bali-btn-ghost {
+  background: transparent;
+  color: var(--bali-muted);
+}
+
+.bali-btn-ghost:hover:not(:disabled) {
+  background: #F5F5F4;
+  color: var(--bali-ink);
+}
+
+.bali-btn-sm {
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+}
+
+.bali-btn-lg {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
+}
+
+/* ===================== Inputs ===================== */
+.bali-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--bali-border);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--bali-ink);
+  background: #FFFFFF;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bali-input:focus {
+  outline: none;
+  border-color: var(--bali-primary);
+  box-shadow: 0 0 0 3px rgb(232 99 25 / 0.14);
+}
+
+.bali-input::placeholder {
+  color: #A8A29E;
+}
+
+.bali-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--bali-muted);
+  margin-bottom: 0.375rem;
+}
+/* ===================== Select ===================== */
+.bali-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--bali-border);
+  border-radius: 0.625rem;
+  font-size: 0.875rem;
+  color: var(--bali-ink);
+  background: #FFFFFF;
+}
+
+.bali-select:focus {
+  outline: none;
+  border-color: var(--bali-primary);
+  box-shadow: 0 0 0 3px rgb(232 99 25 / 0.14);
+}
+
+/* ===================== Badges ===================== */
+.bali-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ===================== Tables ===================== */
+.bali-table-wrap {
+  background: var(--bali-surface);
+  border: 1px solid var(--bali-border);
+  border-radius: var(--bali-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--bali-shadow);
+}
+
+.bali-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.bali-table thead th {
+  text-align: left;
+  padding: 0.625rem 0.875rem;
+  background: #FAFAF9;
+  color: var(--bali-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--bali-border);
+}
+
+.bali-table tbody td {
+  padding: 0.625rem 0.875rem;
+  border-bottom: 1px solid #F5F5F4;
+  color: var(--bali-ink);
+  vertical-align: middle;
+}
+
+.bali-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.bali-table tbody tr:hover {
+  background: #FAFAF9;
+}
+
+.bali-table tbody tr.clickable {
+  cursor: pointer;
+}
+
+/* ===================== Modals ===================== */
+.bali-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+
+.bali-modal {
+  background: #FFFFFF;
+  border-radius: 1rem;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: baliModalIn 0.2s ease-out;
+}
+
+.bali-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--bali-border);
+}
+
+.bali-modal-title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--bali-ink);
+}
+
+.bali-modal-body {
+  padding: 1.5rem;
+}
+
+.bali-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--bali-border);
+}
+
+@keyframes baliModalIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ===================== Alert / Empty / Loading ===================== */
+.bali-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--bali-muted);
+}
+
+.bali-empty-title {
+  font-weight: 600;
+  color: var(--bali-ink);
+  font-size: 0.9375rem;
+}
+
+.bali-skeleton {
+  background: linear-gradient(90deg, #F5F5F4 25%, #E7E5E4 50%, #F5F5F4 75%);
+  background-size: 200% 100%;
+  animation: baliShimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes baliShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ===================== Toast ===================== */
+.bali-toast {
+  border-radius: 0.75rem;
+  box-shadow: var(--bali-shadow-lg);
+  border: 1px solid var(--bali-border);
+}
+
+/* ===================== Tabs ===================== */
+.bali-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: #F5F5F4;
+  padding: 0.25rem;
+  border-radius: 0.625rem;
+}
+
+.bali-tab {
+  padding: 0.375rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--bali-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+}
+
+.bali-tab.active {
+  background: #FFFFFF;
+  color: var(--bali-ink);
+  box-shadow: var(--bali-shadow-sm);
+}
+
+/* ===================== Public site helpers ===================== */
+.bali-container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
 /* Editorial image smooth loading animations */
@@ -28,7 +694,7 @@
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
 }
 
-/* Custom scrollbars */
+/* ===================== Scrollbars ===================== */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -46,4 +712,3 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #B5AD99;
 }
-

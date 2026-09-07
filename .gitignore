@@ -16,8 +16,13 @@ dist/
 npm-debug.log*
 server_output.log
 
-# Runtime data
-.cloud_backups_store.json
+# Runtime data — SQLite DB and backups are gitignored but persisted locally
+# (the data/ folder seeding is applied on first run)
+data/
+
+# Uploads (user-generated media stays local)
+data/uploads/
+data/backups/
 
 # OS
 .DS_Store

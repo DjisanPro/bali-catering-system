@@ -205,7 +205,7 @@ export const UsersView: React.FC = () => {
       <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-2xs">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-[#F27D26] text-xs font-bold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 border border-orange-100 text-[#E86319] text-xs font-bold uppercase tracking-wider mb-2">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span>Arquitetura de Segurança & Permissões RBAC</span>
             </div>
@@ -251,7 +251,7 @@ export const UsersView: React.FC = () => {
               className={`px-5 py-3 rounded-2xl font-bold text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer ${
                 activeSellersCount >= MAX_ACTIVE_SELLERS
                   ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                  : 'bg-[#F27D26] hover:bg-[#d96716] text-white'
+                  : 'bg-[#E86319] hover:bg-[#C74F0E] text-white'
               }`}
             >
               <UserPlus className="w-4 h-4" />
@@ -267,7 +267,7 @@ export const UsersView: React.FC = () => {
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#F27D26] to-amber-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#E86319] to-amber-400 flex items-center justify-center text-slate-950 font-black text-xl shadow-lg">
               ADM
             </div>
             <div>
@@ -363,7 +363,7 @@ export const UsersView: React.FC = () => {
                   <tr key={seller.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center font-bold text-[#F27D26]">
+                        <div className="w-9 h-9 rounded-xl bg-orange-100 border border-orange-200 flex items-center justify-center font-bold text-[#E86319]">
                           {seller.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -461,7 +461,7 @@ export const UsersView: React.FC = () => {
               onClick={() => setSimulatedRole('SELLER')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 simulatedRole === 'SELLER'
-                  ? 'bg-[#F27D26] text-white shadow-sm'
+                  ? 'bg-[#E86319] text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -692,7 +692,7 @@ export const UsersView: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#F27D26] hover:bg-[#d96716] text-white font-bold text-xs shadow-sm cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl bg-[#E86319] hover:bg-[#C74F0E] text-white font-bold text-xs shadow-sm cursor-pointer"
                 >
                   Cadastrar Vendedor
                 </button>

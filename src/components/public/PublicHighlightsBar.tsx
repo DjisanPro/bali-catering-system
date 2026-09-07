@@ -21,7 +21,7 @@ export const PublicHighlightsBar: React.FC = () => {
   ];
 
   return (
-    <section className="border-y border-[#EAE5DC] bg-white py-8">
+    <section className="reveal border-y border-[#EAE5DC] bg-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8 divide-y sm:divide-y-0 sm:divide-x divide-[#EAE5DC]">
           {highlights.map((item, index) => (

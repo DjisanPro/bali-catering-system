@@ -22,6 +22,12 @@ export const AdminHeader: React.FC = () => {
     currentUser,
   } = useRestaurant();
 
+  // Defensive defaults — nunca assumir que o contexto já está carregado
+  const safeOrders = Array.isArray(orders) ? orders : [];
+  const safeIngredients = Array.isArray(ingredients) ? ingredients : [];
+  const safeCloudState = cloudSyncState || { status: 'OFFLINE', pendingQueueCount: 0, totalCloudBackups: 0 };
+  const safeUser = currentUser || null;
+
   const getSubViewTitle = (sub: AdminSubView): { title: string; subtitle: string } => {
     switch (sub) {
       case 'dashboard':
@@ -91,9 +97,9 @@ export const AdminHeader: React.FC = () => {
 
   const { title } = getSubViewTitle(adminSubView);
 
-  const lowStockCount = ingredients.filter(
-    (i) => i.currentStock <= i.minimumStock
-  ).length;
+  const lowStockCount = safeIngredients.filter(
+      (i) => (i.currentStock ?? 0) <= (i.minimumStock ?? 0)
+    ).length;
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sm:px-8 shrink-0">
@@ -102,13 +108,13 @@ export const AdminHeader: React.FC = () => {
           {title}
         </h2>
         <span
-          className={`hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
-            currentUser?.role === 'ADMIN'
-              ? 'bg-slate-900 text-amber-400'
-              : 'bg-blue-50 text-blue-700 border border-blue-200'
-          }`}
-        >
-          {currentUser?.role === 'ADMIN' ? (
+                  className={`hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider ${
+                    safeUser?.role === 'ADMIN'
+                      ? 'bg-slate-900 text-amber-400'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200'
+                  }`}
+                >
+                  {safeUser?.role === 'ADMIN' ? (
             <>
               <ShieldCheck className="w-3 h-3 text-orange-400" />
               <span>Admin Boss</span>
@@ -124,7 +130,7 @@ export const AdminHeader: React.FC = () => {
 
       <div className="flex items-center gap-3">
         {/* Low Stock Warning Pill */}
-        {lowStockCount > 0 && currentUser?.role === 'ADMIN' && (
+        {lowStockCount > 0 && safeUser?.role === 'ADMIN' && (
           <button
             onClick={() => setAdminSubView('ingredients')}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold transition-colors cursor-pointer"
@@ -137,18 +143,18 @@ export const AdminHeader: React.FC = () => {
         )}
 
         {/* Cloud Sync Status Pill */}
-        {currentUser?.role === 'ADMIN' && (
-          <button
-            onClick={() => setAdminSubView('settings')}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold transition-colors cursor-pointer"
-            title="Clique para ver cópias de segurança e histórico de versões"
-          >
-            {cloudSyncState.status === 'ONLINE' ? (
-              <>
-                <Cloud className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-slate-700 hidden md:inline">Nuvem Sincronizada</span>
-              </>
-            ) : cloudSyncState.status === 'SYNCING' ? (
+        {safeUser?.role === 'ADMIN' && (
+                  <button
+                    onClick={() => setAdminSubView('settings')}
+                    className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold transition-colors cursor-pointer"
+                    title="Clique para ver cópias de segurança e histórico de versões"
+                  >
+                    {safeCloudState?.status === 'ONLINE' ? (
+                      <>
+                        <Cloud className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-slate-700 hidden md:inline">Nuvem Sincronizada</span>
+                      </>
+                    ) : safeCloudState?.status === 'SYNCING' ? (
               <>
                 <RefreshCw className="w-3.5 h-3.5 text-blue-600 animate-spin" />
                 <span className="text-slate-700 hidden md:inline">Sincronizando</span>
@@ -173,7 +179,7 @@ export const AdminHeader: React.FC = () => {
         {/* Novo Pedido Button */}
         <button
           onClick={() => setAdminSubView('pos')}
-          className="px-3.5 py-2 bg-[#F27D26] hover:bg-[#d96716] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+          className="px-3.5 py-2 bg-[#E86319] hover:bg-[#C74F0E] text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
         >
           <PlusCircle className="w-4 h-4" />
           <span>Novo Pedido</span>

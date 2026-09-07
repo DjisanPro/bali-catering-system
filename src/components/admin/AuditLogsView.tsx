@@ -49,7 +49,7 @@ export const AuditLogsView: React.FC = () => {
       case 'PAYMENT':
         return 'bg-teal-50 text-teal-700 border-teal-200';
       case 'USER':
-        return 'bg-orange-50 text-[#F27D26] border-orange-200';
+        return 'bg-orange-50 text-[#E86319] border-orange-200';
       case 'AUTH':
         return 'bg-slate-900 text-amber-400 border-slate-700';
       case 'SETTING':

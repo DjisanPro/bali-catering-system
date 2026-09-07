@@ -22,7 +22,7 @@ export const PublicSpotlightProduct: React.FC = () => {
   };
 
   return (
-    <section id="destaque" className="py-20 md:py-28 bg-[#F4EFE6] border-b border-[#E5DFD3]">
+    <section id="destaque" className="reveal py-20 md:py-28 bg-[#F4EFE6] border-b border-[#E5DFD3]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Large Editorial Photograph */}
