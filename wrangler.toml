@@ -4,11 +4,8 @@
 # O backend é o Supabase (Auth + Database + Storage)
 # ============================================================
 
-name = "bali-catering-system"
+name = "baliservices"
 compatibility_date = "2026-09-01"
 
 # Pasta de build estático para Pages
-pages_build_output_dir = "dist"
-
-[env.production]
 pages_build_output_dir = "dist"
