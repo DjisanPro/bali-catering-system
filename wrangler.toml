@@ -1,13 +1,14 @@
 # ============================================================
 # BALI CATERING SYSTEM — Cloudflare Pages config
-# Deploy do FRONTEND estático (Vite build) no Cloudflare Pages.
-# Nota: o backend Express + SQLite é local-first (roda no restaurante);
-# o site público consome /api/* apenas quando o backend local estiver ativo.
-# Para um backend serverless futuro: migrar para Supabase (ver .env.example).
+# Frontend estático (Vite build) + Supabase como backend
+# O backend é o Supabase (Auth + Database + Storage)
 # ============================================================
+
 name = "bali-catering-system"
 compatibility_date = "2026-09-01"
+
+# Pasta de build estático para Pages
 pages_build_output_dir = "dist"
 
-# SPA fallback — todas as rotas servem o index.html
 [env.production]
+pages_build_output_dir = "dist"

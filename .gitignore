@@ -32,3 +32,22 @@ Thumbs.db
 .vscode/
 .idea/
 .backup-qa/
+
+# Test/diagnostic scripts
+.test_*.cjs
+.diagnose_*.cjs
+
+# Wrangler local state
+.wrangler/
+
+# Supabase temp/seed files
+supabase/.temp/
+supabase/block_*.sql
+supabase/seed_data.sql
+supabase/001_schema_clean.sql
+supabase/migrations/001_schema_clean.sql
+
+# Old worker/seed artifacts
+supabase/seed_products.sql
+supabase/signup_ids.json
+workers/seeds.sql

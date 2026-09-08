@@ -57,6 +57,7 @@ import {
   mapPayment,
   mapCashShift,
 } from '../utils/mappers';
+import { supabase } from '../lib/supabase';
 
 // ---------------------------------------------------------------------------
 // Types (kept identical to the previous context for full compatibility)
@@ -108,11 +109,12 @@ interface RestaurantContextType {
   users: User[];
   currentUser: User | null;
   currentSession: { userId: string; loginTime: string; expiresAt: string } | null;
-  authenticateUser: (identifier: string, secret: string) => { success: boolean; user?: User; error?: string };
+  authenticateUser: (identifier: string, secret: string) => Promise<{ success: boolean; user?: User; error?: string }>;
   authenticateAdmin: (pin: string) => boolean;
   logoutUser: () => void;
-  lockAdminSession: () => void;
-  updateAdminPin: (currentPin: string, newPin: string) => { success: boolean; message: string };
+    lockAdminSession: () => void;
+    updateAdminPin: (currentPin: string, newPin: string) => { success: boolean; message: string };
+    sendPasswordReset: (email: string) => Promise<{ success: boolean; message: string }>;
 
   // Authorized Action / Elevation
   isAuthorizedModalOpen: boolean;
@@ -428,20 +430,20 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       if (prods.success) setProducts(mapProductList(prods.data) as unknown as Product[]);
       if (ings.success) setIngredients(mapList<Ingredient>(ings.data));
       if (cust.success) setCustomers(mapList<Customer>(cust.data));
-      if (aud.success) setAuditLogs(mapList<AuditLog>(aud.data?.logs || aud.data || []));
-      if (bs.success) setBackupPoints(mapList<BackupPoint>(bs.data));
-      // Orders & payments (paginated — load most recent 200)
-      const [ord, pay, sh] = await Promise.all([
-        ordersApi.getAll({ limit: 200 }),
-        paymentsApi.getAll({ limit: 200 }),
-        cashApi.getAllShifts(),
-      ]);
-      if (ord.success) setOrders(mapList<Order>(ord.data?.orders || ord.data || []));
-      if (pay.success) setPayments(mapList<PaymentRecord>(pay.data?.payments || pay.data || []));
-      if (sh.success) setCashShifts(mapList<CashShift>(sh.data));
-      // Ingredient movements
-      const mv = await inventoryApi.getMovements({ limit: 200 });
-      if (mv.success) setStockMovements(mapList<StockMovement>(mv.data?.movements || mv.data || []));
+      if (aud.success) setAuditLogs(mapList<AuditLog>((aud.data as any)?.logs || aud.data || []));
+            if (bs.success) setBackupPoints(mapList<BackupPoint>(bs.data));
+            // Orders & payments (paginated — load most recent 200)
+            const [ord, pay, sh] = await Promise.all([
+              ordersApi.getAll({ limit: 200 }),
+              paymentsApi.getAll({ limit: 200 }),
+              cashApi.getAllShifts(),
+            ]);
+            if (ord.success) setOrders(mapList<Order>((ord.data as any)?.orders || ord.data || []));
+            if (pay.success) setPayments(mapList<PaymentRecord>((pay.data as any)?.payments || pay.data || []));
+            if (sh.success) setCashShifts(mapList<CashShift>(sh.data));
+            // Ingredient movements
+            const mv = await inventoryApi.getMovements({ limit: 200 });
+            if (mv.success) setStockMovements(mapList<StockMovement>((mv.data as any)?.movements || mv.data || []));
     } catch (err) {
       console.error('[AppContext] refreshAll failed', err);
     } finally {
@@ -534,30 +536,46 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Auth actions
   // -------------------------------------------------------------------
   const authenticateUser = useCallback(
-    async (identifier: string, secret: string) => {
-      const res = await authApi.login(identifier, secret);
-      if (res.success && res.data) {
-        const u = res.data.user || res.data;
-        setCurrentUser(u);
-        setCurrentSession({
-          userId: u.id || u.userId,
-          loginTime: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
-        });
-        setActiveViewState('admin');
-        if (u.role && u.role === 'SELLER') setAdminSubView('pos');
-        await refreshAll();
-        return { success: true, user: u };
-      }
-      return { success: false, error: res.error || 'Credenciais inválidas.' };
-    },
-    [refreshAll, setActiveViewState]
-  );
+      async (identifier: string, secret: string) => {
+        console.log('[BaliAuth] authenticateUser start', identifier);
+        const res = await authApi.login(identifier, secret);
+        console.log('[BaliAuth] login res', res.success, res.error || '');
+        if (res.success && res.data) {
+          const u = res.data.user || res.data;
+          console.log('[BaliAuth] user', u.role, u.username);
+          setCurrentUser(u);
+          setCurrentSession({
+            userId: u.id || u.userId,
+            loginTime: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 8 * 3600 * 1000).toISOString(),
+          });
+          setActiveViewState('admin');
+          if (u.role && u.role === 'SELLER') setAdminSubView('pos');
+          console.log('[BaliAuth] refreshing all');
+          await refreshAll();
+          console.log('[BaliAuth] refresh done');
+          return { success: true, user: u };
+        }
+        console.log('[BaliAuth] login failed', res.error);
+        return { success: false, error: res.error || 'Credenciais inválidas.' };
+      },
+      [refreshAll, setActiveViewState]
+    );
 
   const authenticateAdmin = useCallback((pin: string) => {
-    // Admin elevation via account password in backend context; PIN fallback
-    return currentUser?.role === 'ADMIN' && pin.length > 0;
-  }, [currentUser]);
+      // Admin elevation via account password in backend context; PIN fallback
+      return currentUser?.role === 'ADMIN' && pin.length > 0;
+    }, [currentUser]);
+
+    const sendPasswordReset = useCallback(async (email: string) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/?reset=true',
+      });
+      if (error) {
+        return { success: false, message: 'Não foi possível enviar o email de recuperação.' };
+      }
+      return { success: true, message: 'Email de recuperação enviado. Verifique a sua caixa de entrada.' };
+    }, []);
 
   const logoutUser = useCallback(async () => {
     await authApi.logout();
@@ -1025,15 +1043,21 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   );
 
   const openCashShift = useCallback(async (initialCashFloat: number, notes?: string): Promise<CashShift | null> => {
-    const res = await cashApi.openShift({ initial_cash_float: initialCashFloat, notes });
-    if (res.success && res.data) {
-      showToast('Caixa aberta', `Fundo inicial: ${initialCashFloat} MT`);
-      await refreshAll();
-      return res.data.shift || res.data;
-    }
-    showToast('Erro', res.error || 'Não foi possível abrir a caixa.', 'error');
-    return null;
-  }, [showToast, refreshAll]);
+      const res = await cashApi.openShift({
+        initialCashFloat,
+        notes,
+        openedBy: currentUser?.name || 'Admin',
+        openedByUserId: currentUser?.id || currentUser?.userId,
+        openedByRole: currentUser?.role || 'ADMIN',
+      });
+      if (res.success && res.data) {
+        showToast('Caixa aberta', `Fundo inicial: ${initialCashFloat} MT`);
+        await refreshAll();
+        return res.data.shift || res.data;
+      }
+      showToast('Erro', res.error || 'Não foi possível abrir a caixa.', 'error');
+      return null;
+    }, [showToast, refreshAll, currentUser]);
 
   const closeCashShift = useCallback(
     async (countedCash: number, justification?: string, notes?: string): Promise<CashShift | null> => {
@@ -1181,10 +1205,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     currentUser,
     currentSession,
     authenticateUser,
-    authenticateAdmin,
-    logoutUser,
-    lockAdminSession,
-    updateAdminPin,
+        authenticateAdmin,
+        logoutUser,
+        lockAdminSession,
+        updateAdminPin,
+        sendPasswordReset,
 
     isAuthorizedModalOpen,
     setIsAuthorizedModalOpen,

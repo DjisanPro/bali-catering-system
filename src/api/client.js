@@ -1,133 +1,60 @@
 /**
- * Base HTTP client for Bali Catering Service API.
- * All API modules import from this client.
- * Uses localStorage('bali_auth_token') for auth.
+ * API Client — now wraps Supabase directly.
+ * All modules import from this or use supabase client directly.
+ * Keeps the same { success, data, error } return shape.
  */
 
-const TOKEN_KEY = 'bali_auth_token';
+import { supabase } from '../lib/supabase';
+
+export { supabase };
 
 /**
- * Get the current auth token from localStorage.
+ * Get current session user from Supabase Auth.
  */
-export function getToken() {
+export async function getCurrentUser() {
   try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) return { success: false, error: sessionError.message };
+    if (!session) return { success: false, error: 'Não autenticado' };
+
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('auth_user_id', session.user.id)
+      .single();
+
+    if (profileError || !profile) {
+      return { success: false, error: 'Perfil não encontrado' };
+    }
+
+    return {
+      success: true,
+      data: {
+        userId: profile.id,
+        username: profile.username,
+        name: profile.name,
+        email: profile.email,
+        role: profile.role,
+        status: profile.status,
+      },
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
   }
 }
 
 /**
- * Set the auth token in localStorage.
+ * Set auth token (for backwards compatibility — Supabase manages sessions internally).
  */
 export function setToken(token) {
-  try {
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
-    }
-  } catch {
-    // localStorage unavailable (SSR, private browsing edge case)
-  }
+  // No-op: Supabase manages auth tokens via localStorage internally
 }
 
-/**
- * Clear the auth token and redirect to login.
- */
+export function getToken() {
+  // No-op: Supabase manages auth tokens internally
+  return null;
+}
+
 export function clearAuthAndRedirect() {
-  setToken(null);
-  // Dispatch a custom event so AppContext can react
   window.dispatchEvent(new CustomEvent('bali:auth-expired'));
-}
-
-/**
- * Core fetch wrapper.
- * @param {string} url - API endpoint (relative or absolute)
- * @param {object} options - fetch options
- * @returns {Promise<{success: boolean, data?: any, error?: string}>}
- */
-export async function request(url, options = {}) {
-  const token = getToken();
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    // Handle 401 Unauthorized
-    if (response.status === 401) {
-      clearAuthAndRedirect();
-      return { success: false, error: 'Session expired. Please log in again.' };
-    }
-
-    // Handle other errors
-    if (!response.ok) {
-      let errorMessage = `Request failed with status ${response.status}`;
-      try {
-        const errorBody = await response.json();
-        errorMessage = errorBody.error || errorBody.message || errorMessage;
-      } catch {
-        // Response body wasn't JSON
-      }
-      return { success: false, error: errorMessage };
-    }
-
-    // Handle 204 No Content
-    if (response.status === 204) {
-      return { success: true, data: null };
-    }
-
-    // Parse JSON response — unwrap the backend envelope {success, data, error}
-    const body = await response.json();
-    return {
-      success: body.success !== false,
-      data: body.data,
-      error: body.error,
-    };
-  } catch (error) {
-    console.error(`[API] Request failed: ${options.method || 'GET'} ${url}`, error);
-    return { success: false, error: error.message || 'Network error. Please check your connection.' };
-  }
-}
-
-/**
- * HTTP method helpers.
- */
-export function get(url) {
-  return request(url, { method: 'GET' });
-}
-
-export function post(url, data) {
-  return request(url, {
-    method: 'POST',
-    body: data ? JSON.stringify(data) : undefined,
-  });
-}
-
-export function put(url, data) {
-  return request(url, {
-    method: 'PUT',
-    body: data ? JSON.stringify(data) : undefined,
-  });
-}
-
-export function patch(url, data) {
-  return request(url, {
-    method: 'PATCH',
-    body: data ? JSON.stringify(data) : undefined,
-  });
-}
-
-export function del(url) {
-  return request(url, { method: 'DELETE' });
 }

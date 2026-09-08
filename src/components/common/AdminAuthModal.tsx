@@ -26,11 +26,10 @@ export const AdminAuthModal: React.FC = () => {
     setIsAuthModalOpen,
     users,
     authenticateUser,
-    signInWithFirebase,
     sendPasswordReset,
   } = useRestaurant();
 
-  const [authMethod, setAuthMethod] = useState<'firebase' | 'pin'>('firebase');
+  const [authMethod, setAuthMethod] = useState<'password' | 'pin'>('password');
   const [authRole, setAuthRole] = useState<UserRole>('ADMIN');
   const [username, setUsername] = useState<string>('admin');
   const [email, setEmail] = useState<string>('admin@balicatering.co.mz');
@@ -70,7 +69,7 @@ export const AdminAuthModal: React.FC = () => {
         setEmail(`${activeSellers[0].username}@balicatering.co.mz`);
       }
       setTimeout(() => {
-        if (authMethod === 'firebase') {
+        if (authMethod === 'password') {
           emailInputRef.current?.focus();
         } else {
           pinInputRef.current?.focus();
@@ -98,7 +97,7 @@ export const AdminAuthModal: React.FC = () => {
     }
   };
 
-  const handleFirebaseSubmit = async (e: React.FormEvent) => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
     const cleanPass = password.trim();
@@ -118,7 +117,8 @@ export const AdminAuthModal: React.FC = () => {
     setErrorMsg('');
 
     try {
-      const res = await signInWithFirebase(cleanEmail, cleanPass);
+      // Use the real Supabase-backed authenticateUser (email+password)
+      const res = await authenticateUser(cleanEmail, cleanPass);
       if (res.success) {
         setIsSuccess(true);
         setTimeout(() => {
@@ -133,11 +133,11 @@ export const AdminAuthModal: React.FC = () => {
       }
     } catch (err: any) {
       setIsLoading(false);
-      setErrorMsg(err.message || 'Erro ao comunicar com o Firebase Auth.');
+      setErrorMsg(err.message || 'Erro ao comunicar com o servidor.');
     }
   };
 
-  const handlePinSubmit = (e?: React.FormEvent) => {
+  const handlePinSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanUser = username.trim();
     const cleanPin = pin.trim();
@@ -154,14 +154,19 @@ export const AdminAuthModal: React.FC = () => {
       return;
     }
 
-    const result = authenticateUser(cleanUser, cleanPin);
+    setIsLoading(true);
+    setErrorMsg('');
+
+    const result = await authenticateUser(cleanUser, cleanPin);
     if (result.success) {
       setIsSuccess(true);
       setErrorMsg('');
       setTimeout(() => {
         setIsAuthModalOpen(false);
+        setIsLoading(false);
       }, 300);
     } else {
+      setIsLoading(false);
       setErrorMsg(result.error || 'Credenciais inválidas. Verifique o utilizador e PIN.');
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 500);
@@ -235,7 +240,7 @@ export const AdminAuthModal: React.FC = () => {
           <p className="text-xs text-slate-500 max-w-xs mt-1">
             {isForgotView
               ? 'Receberá instruções no seu e-mail para redefinir o acesso com segurança.'
-              : 'Firebase Auth & Controlo de Acesso Baseado em Funções (RBAC).'}
+              : 'Autenticação segura com Supabase & Controlo de Acesso Baseado em Funções (RBAC).'}
           </p>
 
           {/* Abas Método de Login */}
@@ -244,17 +249,17 @@ export const AdminAuthModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setAuthMethod('firebase');
+                  setAuthMethod('password');
                   setErrorMsg('');
                 }}
                 className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  authMethod === 'firebase'
+                  authMethod === 'password'
                     ? 'bg-white text-slate-900 shadow-xs border border-slate-200/50'
                     : 'text-slate-500 hover:text-slate-900'
                 }`}
               >
                 <Flame className="w-3.5 h-3.5 text-amber-500" />
-                <span>Firebase Auth</span>
+                <span>E-mail & Senha</span>
               </button>
 
               <button
@@ -336,12 +341,12 @@ export const AdminAuthModal: React.FC = () => {
               </button>
             </div>
           </form>
-        ) : authMethod === 'firebase' ? (
-          /* Formulário Firebase Auth */
-          <form onSubmit={handleFirebaseSubmit} className="p-6 space-y-4">
+        ) : authMethod === 'password' ? (
+          /* Formulário de Login */
+          <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                E-mail Corporativo (Firebase Auth)
+                E-mail Institucional
               </label>
               <div className="relative flex items-center">
                 <div className="absolute left-3 text-slate-400 pointer-events-none">
@@ -415,7 +420,7 @@ export const AdminAuthModal: React.FC = () => {
             {isSuccess && (
               <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 py-2 px-3 rounded-xl border border-emerald-200">
                 <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>Autenticação Firebase realizada com sucesso. A entrar...</span>
+                <span>Autenticação realizada com sucesso. A entrar...</span>
               </div>
             )}
 
@@ -426,7 +431,7 @@ export const AdminAuthModal: React.FC = () => {
                 className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white font-bold text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Unlock className="w-4 h-4 text-[#E86319]" />
-                <span>{isLoading ? 'A autenticar no Firebase...' : 'Entrar com Firebase Auth'}</span>
+                <span>{isLoading ? 'A autenticar...' : 'Entrar com a conta'}</span>
               </button>
             </div>
           </form>

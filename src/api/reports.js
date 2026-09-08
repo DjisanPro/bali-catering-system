@@ -1,35 +1,48 @@
 /**
- * Reports API - sales, financial, and operational reports.
+ * Reports API — Supabase backed. Financial/stock reports.
  */
-import { get } from './client.js';
+import { supabase } from '../lib/supabase';
 
-function getDailyReport(date) {
-  return get(`/api/reports/daily${date ? '?date=' + date : ''}`);
+export async function getSalesReport(filters = {}) {
+  try {
+    let query = supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (filters.from) query = query.gte('created_at', filters.from);
+    if (filters.to) query = query.lte('created_at', filters.to);
+    if (filters.limit) query = query.limit(filters.limit || 500);
+
+    const { data, error } = await query;
+    if (error) return { success: false, error: error.message };
+
+    const totalRevenue = (data || []).reduce((s, o) => s + Number(o.total), 0);
+    const totalCost = (data || []).reduce((s, o) => s + Number(o.subtotal || o.total), 0);
+
+    return {
+      success: true,
+      data: {
+        orders: data || [],
+        totalRevenue,
+        ordersCount: (data || []).length,
+      },
+    };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }
 
-function getSalesReport(params = {}) {
-  const query = new URLSearchParams(params).toString();
-  return get(`/api/reports/sales${query ? '?' + query : ''}`);
-}
+export async function getStockReport() {
+  try {
+    const { data, error } = await supabase
+      .from('ingredients')
+      .select('*')
+      .order('name');
 
-function getFinancialReport(params = {}) {
-  const query = new URLSearchParams(params).toString();
-  return get(`/api/reports/financial${query ? '?' + query : ''}`);
+    if (error) return { success: false, error: error.message };
+    return { success: true, data: data || [] };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }
-
-function getInventoryReport() {
-  return get('/api/reports/stock');
-}
-
-function getCustomerReport(params = {}) {
-  const query = new URLSearchParams(params).toString();
-  return get(`/api/reports/customers${query ? '?' + query : ''}`);
-}
-
-export { 
-  getDailyReport,
-  getSalesReport,
-  getFinancialReport,
-  getInventoryReport,
-  getCustomerReport,
- };

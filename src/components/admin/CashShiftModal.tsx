@@ -53,56 +53,61 @@ export const CashShiftModal: React.FC<CashShiftModalProps> = ({ isOpen, onClose 
 
   const summary = getCashShiftSummary();
 
-  const handleOpenShift = (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = Number(initialFloat);
-    const created = openCashShift(num, openNotes);
-    if (created) {
-      setActiveTab('STATUS');
-    }
-  };
+  const handleOpenShift = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const num = Number(initialFloat);
+        const created = await openCashShift(num, openNotes);
+        if (created) {
+          // Brief flash of STATUS then auto-close
+          setActiveTab('STATUS');
+          setTimeout(() => onClose(), 600);
+        }
+      };
 
-  const handleSupply = (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = Number(supplyAmount);
-    if (addCashSupply(num, supplyReason)) {
-      setSupplyAmount('');
-      setActiveTab('STATUS');
-    }
-  };
-
-  const handleBleed = (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = Number(bleedAmount);
-    // Sangria exige confirmação de administrador se usuário for vendedor
-    if (currentUser?.role === 'SELLER') {
-      requestAdminElevation(
-        () => {
-          if (addCashBleed(num, bleedReason)) {
-            setBleedAmount('');
-            setActiveTab('STATUS');
-          }
-        },
-        'Autorização para Sangria de Caixa',
-        `Autorizar retirada de ${num} MT do caixa pelo vendedor ${currentUser.name}.`
-      );
-    } else {
-      if (addCashBleed(num, bleedReason)) {
-        setBleedAmount('');
+  const handleSupply = async (e: React.FormEvent) => {
+      e.preventDefault();
+      const num = Number(supplyAmount);
+      const ok = await addCashSupply(num, supplyReason);
+      if (ok) {
+        setSupplyAmount('');
         setActiveTab('STATUS');
       }
-    }
-  };
+    };
 
-  const handleCloseShift = (e: React.FormEvent) => {
-    e.preventDefault();
-    const num = Number(countedCash);
-    const closed = closeCashShift(num, closeJustification, closeNotes);
-    if (closed) {
-      setCountedCash('');
-      onClose();
-    }
-  };
+    const handleBleed = async (e: React.FormEvent) => {
+      e.preventDefault();
+      const num = Number(bleedAmount);
+      // Sangria exige confirmação de administrador se usuário for vendedor
+      if (currentUser?.role === 'SELLER') {
+        requestAdminElevation(
+          async () => {
+            const ok = await addCashBleed(num, bleedReason);
+            if (ok) {
+              setBleedAmount('');
+              setActiveTab('STATUS');
+            }
+          },
+          'Autorização para Sangria de Caixa',
+          `Autorizar retirada de ${num} MT do caixa pelo vendedor ${currentUser.name}.`
+        );
+      } else {
+        const ok = await addCashBleed(num, bleedReason);
+        if (ok) {
+          setBleedAmount('');
+          setActiveTab('STATUS');
+        }
+      }
+    };
+
+    const handleCloseShift = async (e: React.FormEvent) => {
+      e.preventDefault();
+      const num = Number(countedCash);
+      const closed = await closeCashShift(num, closeJustification, closeNotes);
+      if (closed) {
+        setCountedCash('');
+        onClose();
+      }
+    };
 
   const cashDiscrepancy = countedCash
     ? Number((Number(countedCash) - (currentCashShift?.expectedCash || 0)).toFixed(2))
