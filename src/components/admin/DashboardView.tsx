@@ -13,15 +13,16 @@ import {
 
 export const DashboardView: React.FC = () => {
   const {
-    orders,
-    products,
-    ingredients,
-    payments,
-    customers,
-    auditLogs,
-    updateOrderStatus,
-    setAdminSubView,
-  } = useRestaurant();
+      orders,
+      products,
+      ingredients,
+      payments,
+      customers,
+      auditLogs,
+      expenses,
+      updateOrderStatus,
+      setAdminSubView,
+    } = useRestaurant();
 
   // Computations — sempre derivadas de dados reais
     // Defensive defaults: nunca renderizar .map() sobre undefined
@@ -30,6 +31,7 @@ export const DashboardView: React.FC = () => {
     const safeIngredients = Array.isArray(ingredients) ? ingredients : [];
     const safePayments = Array.isArray(payments) ? payments : [];
     const safeAuditLogs = Array.isArray(auditLogs) ? auditLogs : [];
+    const safeExpenses = Array.isArray(expenses) ? expenses : [];
 
     const isSameDay = (iso: string | undefined, ref: Date): boolean => {
       if (!iso) return false;
@@ -63,6 +65,81 @@ export const DashboardView: React.FC = () => {
     const revenueDeltaLabel = `${revenueDelta >= 0 ? '+' : ''}${revenueDelta.toFixed(1)}% vs ontem`;
 
     const totalRevenue = completedPaid.reduce((sum, o) => sum + o.total, 0);
+
+    // ---- Finanças: custos, lucro e despesas (somente vendas pagas) ----
+    // Custo de cada venda = soma dos item.unitCost × quantity; se não houver, usa costPrice de produto
+    const costOfOrder = (o: any): number => {
+      const items = Array.isArray(o.items) ? o.items : [];
+      if (items.length === 0) return Number(o.cost_total || 0);
+      const itemCost = items.reduce((s, it) => s + Number(it.unitCost || 0) * Number(it.quantity || 1), 0);
+      if (itemCost > 0) return itemCost;
+      // Fallback: custo estimado dos produtos pela ficha técnica (costPrice)
+      return items.reduce((s, it) => s + Number((products.find(p => p.id === it.productId) || {}).costPrice || 0) * Number(it.quantity || 1), 0);
+    };
+
+    const todayCost = completedPaid
+      .filter((o) => isSameDay(o.createdAt, today))
+      .reduce((sum, o) => sum + costOfOrder(o), 0);
+
+    const todayExpenses = safeExpenses
+      .filter((e) => isSameDay(e.expenseDate, today))
+      .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+
+    const todayProfit = todayRevenue - todayCost - todayExpenses;
+    const todayOrdersCount = completedPaid.filter((o) => isSameDay(o.createdAt, today)).length;
+
+    // Semana (últimos 7 dias)
+    const weekAgo = new Date(today);
+    weekAgo.setDate(today.getDate() - 7);
+    const weekOrders = completedPaid.filter((o) => {
+      if (!o.createdAt) return false;
+      const d = new Date(o.createdAt);
+      return d >= weekAgo && d <= today;
+    });
+    const weekRevenue = weekOrders.reduce((sum, o) => sum + o.total, 0);
+    const weekCost = weekOrders.reduce((sum, o) => sum + costOfOrder(o), 0);
+    const weekExpenses = safeExpenses
+      .filter((e) => {
+        if (!e.expenseDate) return false;
+        const d = new Date(e.expenseDate);
+        return d >= weekAgo && d <= today;
+      })
+      .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const weekProfit = weekRevenue - weekCost - weekExpenses;
+
+    // Mês (últimos 30 dias)
+    const monthAgo = new Date(today);
+    monthAgo.setDate(today.getDate() - 30);
+    const monthOrders = completedPaid.filter((o) => {
+      if (!o.createdAt) return false;
+      const d = new Date(o.createdAt);
+      return d >= monthAgo && d <= today;
+    });
+    const monthRevenue = monthOrders.reduce((sum, o) => sum + o.total, 0);
+    const monthCost = monthOrders.reduce((sum, o) => sum + costOfOrder(o), 0);
+    const monthExpenses = safeExpenses
+      .filter((e) => {
+        if (!e.expenseDate) return false;
+        const d = new Date(e.expenseDate);
+        return d >= monthAgo && d <= today;
+      })
+      .reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const monthProfit = monthRevenue - monthCost - monthExpenses;
+
+    // Produtos mais vendidos (mês)
+    const monthProductSales: Record<string, { name: string; qty: number; revenue: number }> = {};
+    monthOrders.forEach((o) => {
+      (Array.isArray(o.items) ? o.items : []).forEach((it: any) => {
+        const key = it.productId || it.productName;
+        if (!key) return;
+        if (!monthProductSales[key]) monthProductSales[key] = { name: it.productName, qty: 0, revenue: 0 };
+        monthProductSales[key].qty += Number(it.quantity || 1);
+        monthProductSales[key].revenue += Number(it.price || 0) * Number(it.quantity || 1);
+      });
+    });
+    const topProducts = Object.values(monthProductSales)
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5);
 
     const activeOrders = safeOrders.filter(
       (o) => o.status === 'PENDING' || o.status === 'PREPARING' || o.status === 'CONFIRMED'
@@ -242,13 +319,29 @@ export const DashboardView: React.FC = () => {
                           </button>
                         )}
                         {order.status === 'READY' && (
-                          <button
-                            onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
-                            className="px-2 py-1 bg-slate-900 hover:bg-black text-white rounded text-[10px] font-bold"
-                          >
-                            Entregar
-                          </button>
-                        )}
+                                                  <button
+                                                    onClick={() => updateOrderStatus(order.id, 'OUT_FOR_DELIVERY')}
+                                                    className="px-2 py-1 bg-violet-600 hover:bg-violet-700 text-white rounded text-[10px] font-bold"
+                                                  >
+                                                    Saída
+                                                  </button>
+                                                )}
+                                                {order.status === 'OUT_FOR_DELIVERY' && (
+                                                  <button
+                                                    onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
+                                                    className="px-2 py-1 bg-slate-900 hover:bg-black text-white rounded text-[10px] font-bold"
+                                                  >
+                                                    Entregar
+                                                  </button>
+                                                )}
+                                                {order.status === 'READY' && true && (
+                                                  <button
+                                                    onClick={() => updateOrderStatus(order.id, 'DELIVERED')}
+                                                    className="px-2 py-1 bg-slate-900 hover:bg-black text-white rounded text-[10px] font-bold"
+                                                  >
+                                                    Entregar
+                                                  </button>
+                                                )}
                       </td>
                     </tr>
                   );
@@ -258,9 +351,64 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
 
-        {/* Right (2 columns): Stock Alert & Technical Sheet */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Stock Alert Box */}
+        {/* Right (2 columns): Finance, Stock Alert & Technical Sheet */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Financial Summary Box (Hoje / Semana / Mês) */}
+                  <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
+                    <h3 className="font-bold text-slate-800 mb-3 flex items-center gap-2 font-heading">
+                      <TrendingUp className="w-4 h-4 text-emerald-600" />
+                      Painel Financeiro
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                      <div className="rounded-lg bg-slate-50 px-1 py-2">
+                        <p className="text-[9px] font-bold uppercase text-slate-400">Hoje</p>
+                        <p className="text-xs font-black text-slate-900">{formatMT(todayRevenue)}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 px-1 py-2">
+                        <p className="text-[9px] font-bold uppercase text-slate-400">Semana</p>
+                        <p className="text-xs font-black text-slate-900">{formatMT(weekRevenue)}</p>
+                      </div>
+                      <div className="rounded-lg bg-slate-50 px-1 py-2">
+                        <p className="text-[9px] font-bold uppercase text-slate-400">Mês</p>
+                        <p className="text-xs font-black text-slate-900">{formatMT(monthRevenue)}</p>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5 text-[11px]">
+                      <div className="flex justify-between text-slate-500">
+                        <span>Custo (fichas técnicas)</span>
+                        <span className="font-bold text-slate-800">{formatMT(todayCost)}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-500">
+                        <span>Despesas</span>
+                        <span className="font-bold text-rose-600">{formatMT(todayExpenses)}</span>
+                      </div>
+                      <div className="flex justify-between border-t border-slate-100 pt-1.5 text-slate-700">
+                        <span className="font-bold">Lucro Líquido Hoje</span>
+                        <span className={`font-black ${todayProfit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {formatMT(todayProfit)}
+                        </span>
+                      </div>
+                      {topProducts.length > 0 && (
+                        <div className="border-t border-slate-100 pt-2 mt-1">
+                          <p className="text-[9px] font-bold uppercase text-slate-400 mb-1.5">Mais Vendidos (30 dias)</p>
+                          {topProducts.map((tp, idx) => (
+                            <div key={idx} className="flex justify-between text-[10px] text-slate-500 leading-relaxed">
+                              <span className="truncate max-w-[60%]">{tp.qty}x {tp.name}</span>
+                              <span className="font-bold text-slate-700">{formatMT(tp.revenue)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setAdminSubView('expenses')}
+                      className="w-full mt-3 py-2 bg-slate-50 text-[10px] font-bold uppercase text-slate-500 hover:text-[#E86319] border border-slate-100 rounded transition-all text-center block"
+                    >
+                      Gestão de Despesas
+                    </button>
+                  </div>
+
+                  {/* Stock Alert Box */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-5">
             <h3 className="font-bold text-slate-800 mb-4 flex justify-between items-center font-heading">
               <span>Alerta de Estoque</span>

@@ -174,40 +174,50 @@ export async function deductStock(orderIdOrItems, performedBy = 'Sistema') {
     }
 
     // Deduct from each ingredient
-    for (const [ingredientId, qty] of Object.entries(required)) {
-      const { data: ing, error: iErr } = await supabase
-        .from('ingredients')
-        .select('*')
-        .eq('id', ingredientId)
-        .single();
+        let totalCost = 0;
+        for (const [ingredientId, qty] of Object.entries(required)) {
+          const { data: ing, error: iErr } = await supabase
+            .from('ingredients')
+            .select('*')
+            .eq('id', ingredientId)
+            .single();
 
-      if (iErr || !ing) continue;
+          if (iErr || !ing) continue;
 
-      const prev = Number(ing.current_stock);
-      const newStock = Math.max(0, prev - qty);
+          const prev = Number(ing.current_stock);
+          const newStock = Math.max(0, prev - qty);
+          totalCost += Number(ing.cost_per_unit || 0) * qty;
 
-      await supabase
-        .from('ingredients')
-        .update({ current_stock: newStock, updated_at: new Date().toISOString() })
-        .eq('id', ingredientId);
+          await supabase
+            .from('ingredients')
+            .update({ current_stock: newStock, updated_at: new Date().toISOString() })
+            .eq('id', ingredientId);
 
-      await supabase
-        .from('stock_movements')
-        .insert({
-          ingredient_id: ingredientId,
-          ingredient_name: ing.name,
-          unit: ing.unit,
-          type: 'EXIT_ORDER',
-          quantity: qty,
-          previous_stock: prev,
-          new_stock: newStock,
-          reason: 'Baixa por venda',
-          performed_by: performedBy,
-        });
+          await supabase
+            .from('stock_movements')
+            .insert({
+              ingredient_id: ingredientId,
+              ingredient_name: ing.name,
+              unit: ing.unit,
+              type: 'EXIT_ORDER',
+              quantity: qty,
+              previous_stock: prev,
+              new_stock: newStock,
+              reason: 'Baixa por venda',
+              performed_by: performedBy,
+            });
+        }
+
+        // Mark the order as stock deducted
+        if (typeof orderIdOrItems === 'string' || typeof orderIdOrItems === 'number') {
+          await supabase
+            .from('orders')
+            .update({ stock_deducted: true, updated_at: new Date().toISOString() })
+            .eq('id', String(orderIdOrItems));
+        }
+
+        return { success: true, data: { totalCost } };
+      } catch (e) {
+        return { success: false, error: e.message };
+      }
     }
-
-    return { success: true };
-  } catch (e) {
-    return { success: false, error: e.message };
-  }
-}

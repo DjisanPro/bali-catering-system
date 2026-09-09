@@ -51,6 +51,8 @@ export const formatDateTime = (dateString: string): string => {
 
 export const getOrderStatusLabel = (status: OrderStatus): string => {
   switch (status) {
+    case 'RECEIVED':
+      return 'Recebido';
     case 'PENDING':
       return 'Pendente';
     case 'CONFIRMED':
@@ -59,6 +61,8 @@ export const getOrderStatusLabel = (status: OrderStatus): string => {
       return 'Em Preparação';
     case 'READY':
       return 'Pronto';
+    case 'OUT_FOR_DELIVERY':
+      return 'Saiu para Entrega';
     case 'DELIVERED':
       return 'Entregue / Concluído';
     case 'CANCELLED':
@@ -70,6 +74,8 @@ export const getOrderStatusLabel = (status: OrderStatus): string => {
 
 export const getOrderStatusBadgeColor = (status: OrderStatus): { bg: string; text: string; border: string } => {
   switch (status) {
+    case 'RECEIVED':
+      return { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200' };
     case 'PENDING':
       return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' };
     case 'CONFIRMED':
@@ -78,6 +84,8 @@ export const getOrderStatusBadgeColor = (status: OrderStatus): { bg: string; tex
       return { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' };
     case 'READY':
       return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' };
+    case 'OUT_FOR_DELIVERY':
+      return { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' };
     case 'DELIVERED':
       return { bg: 'bg-green-50', text: 'text-green-800', border: 'border-green-300' };
     case 'CANCELLED':

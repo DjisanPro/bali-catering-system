@@ -121,13 +121,20 @@ export const AdminSidebar: React.FC = () => {
     },
 
     // Financeiro & Sistema
-    {
-      id: 'payments',
-      label: 'Pagamentos & Caixa',
-      icon: <CreditCard className="w-4 h-4" />,
-      restrictedForSeller: true,
-      group: 'system',
-    },
+        {
+          id: 'payments',
+          label: 'Pagamentos & Caixa',
+          icon: <CreditCard className="w-4 h-4" />,
+          restrictedForSeller: true,
+          group: 'system',
+        },
+        {
+          id: 'expenses',
+          label: 'Despesas',
+          icon: <TrendingDown className="w-4 h-4" />,
+          restrictedForSeller: true,
+          group: 'system',
+        },
     {
       id: 'customers',
       label: 'Clientes (CRM)',

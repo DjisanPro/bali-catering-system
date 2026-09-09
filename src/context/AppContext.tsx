@@ -27,7 +27,8 @@ import {
   SecurityAlertType,
   SecurityAlertSeverity,
   OrderItem,
-} from '../types';
+    Expense,
+  } from '../types';
 
 // API client (backend-backed, real database)
 // These are now ES modules with named exports.
@@ -47,6 +48,7 @@ import * as settingsApi from '../api/settings';
 import * as usersApi from '../api/users';
 import * as dashboardApi from '../api/dashboard';
 import * as recipesApi from '../api/recipes';
+import * as expensesApi from '../api/expenses';
 import {
   mapProductList,
   mapList,
@@ -79,7 +81,8 @@ export type AdminSubView =
   | 'debts'
   | 'reports'
   | 'cash'
-  | 'media';
+    | 'media'
+    | 'expenses';
 
 interface ToastNotification {
   id: string;
@@ -257,11 +260,17 @@ interface RestaurantContextType {
     logPayment: (payment: Omit<PaymentRecord, 'id' | 'createdAt'>) => PaymentRecord | null;
 
   // Backup & Recovery
-  backupPoints: BackupPoint[];
-  createManualBackup: (label?: string) => Promise<BackupPoint | null>;
-  restoreBackupPoint: (backupId: string) => Promise<boolean>;
-  exportBackupJSON: () => void;
-  isAutoBackupRunning: boolean;
+    backupPoints: BackupPoint[];
+    createManualBackup: (label?: string) => Promise<BackupPoint | null>;
+    restoreBackupPoint: (backupId: string) => Promise<boolean>;
+    exportBackupJSON: () => void;
+    isAutoBackupRunning: boolean;
+
+    // Expenses (Despesas)
+    expenses: Expense[];
+    addExpense: (expense: Omit<Expense, 'id' | 'createdAt'>) => Promise<boolean>;
+    updateExpense: (id: string, expense: Partial<Expense>) => Promise<boolean>;
+    removeExpense: (id: string) => Promise<boolean>;
 
   // System & Config
   updateConfig: (newConfig: Partial<RestaurantConfig>) => void;
@@ -392,6 +401,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [cashShifts, setCashShifts] = useState<CashShift[]>([]);
   const [securityAlerts, setSecurityAlerts] = useState<SecurityAlert[]>([]);
   const [backupPoints, setBackupPoints] = useState<BackupPoint[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [isAutoBackupRunning, setIsAutoBackupRunning] = useState(false);
 
   // Cloud sync state — local-first: honest "Modo Local" indicator.
@@ -464,8 +474,11 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
             if (pay.success) setPayments(mapList<PaymentRecord>((pay.data as any)?.payments || pay.data || []));
             if (sh.success) setCashShifts(mapList<CashShift>(sh.data));
             // Ingredient movements
-            const mv = await inventoryApi.getMovements({ limit: 200 });
-            if (mv.success) setStockMovements(mapList<StockMovement>((mv.data as any)?.movements || mv.data || []));
+                        const mv = await inventoryApi.getMovements({ limit: 200 });
+                        if (mv.success) setStockMovements(mapList<StockMovement>((mv.data as any)?.movements || mv.data || []));
+                        // Expenses
+                        const exp = await expensesApi.getAll({ limit: 200 });
+                        if (exp.success) setExpenses(mapList<Expense>(exp.data));
     } catch (err) {
       console.error('[AppContext] refreshAll failed', err);
     } finally {
@@ -786,14 +799,36 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     };
     const res = await ordersApi.create(payload);
         if (res.success && res.data) {
-          const rawOrder = res.data.order || res.data;
-          // Map to camelCase Order shape (orderNumber, createdAt, customerName, subtotal, total...)
-                    const order = mapOrder(rawOrder) as unknown as Order;
-          clearCart();
-          showToast('Pedido criado', `${order.orderNumber || 'Pedido'} registado com sucesso.`);
-          await refreshAll();
-          return order;
-        }
+                  const rawOrder = res.data.order || res.data;
+                  // Map to camelCase Order shape (orderNumber, createdAt, customerName, subtotal, total...)
+                  const order = mapOrder(rawOrder) as unknown as Order;
+                  clearCart();
+                  showToast('Pedido criado', `${order.orderNumber || 'Pedido'} registado com sucesso.`);
+
+                  // Dedução automática de stock para vendas pagas (ficha técnica)
+                  if (order.paymentStatus === 'PAID' && order.id && !order.stockDeducted) {
+                    try {
+                      const deducted = await inventoryApi.deductStock(order.id, currentUser?.name || 'Sistema');
+                      if (deducted.success) {
+                        // Atualizar costPrice do produto com base na ficha técnica (custo real)
+                        const totalCost = deducted.data?.totalCost || 0;
+                        if (totalCost > 0) {
+                          await supabase
+                            .from('orders')
+                            .update({ cost_total: totalCost, updated_at: new Date().toISOString() })
+                            .eq('id', order.id);
+                        }
+                      } else {
+                        console.warn('Dedução de stock falhou:', deducted.error);
+                      }
+                    } catch (deductErr) {
+                      console.warn('Erro ao deduzir stock:', deductErr);
+                    }
+                  }
+
+                  await refreshAll();
+                  return order;
+                }
     showToast('Erro', res.error || 'Não foi possível criar o pedido.', 'error');
     return null;
   }, [config, clearCart, showToast, refreshAll]);
@@ -877,14 +912,53 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   );
 
   const deductStockForOrder = useCallback(async (order: Order): Promise<boolean> => {
-    if (order.stockDeducted) return true;
-    const res = await inventoryApi.deductStock(order.id);
-    if (res.success) {
-      await refreshAll();
-      return true;
-    }
-    return false;
-  }, [refreshAll]);
+      if (order.stockDeducted) return true;
+      const res = await inventoryApi.deductStock(order.id);
+      if (res.success) {
+        await refreshAll();
+        return true;
+      }
+      return false;
+    }, [refreshAll]);
+
+    // -------------------------------------------------------------------
+    // Expenses (Despesas)
+    // -------------------------------------------------------------------
+    const addExpense = useCallback(async (expense: Omit<Expense, 'id' | 'createdAt'>): Promise<boolean> => {
+      const res = await expensesApi.create({
+        ...expense,
+        createdBy: currentUser?.id,
+      });
+      if (res.success) {
+        showToast('Despesa registada', `${expense.description} — ${Number(expense.amount).toLocaleString('pt-MZ')} MT.`, 'success');
+        await refreshAll();
+        return true;
+      }
+      showToast('Erro', res.error || 'Não foi possível registar a despesa.', 'error');
+      return false;
+    }, [currentUser, showToast, refreshAll]);
+
+    const updateExpense = useCallback(async (id: string, expense: Partial<Expense>): Promise<boolean> => {
+      const res = await expensesApi.update(id, expense);
+      if (res.success) {
+        showToast('Despesa atualizada', 'Registo atualizado com sucesso.', 'success');
+        await refreshAll();
+        return true;
+      }
+      showToast('Erro', res.error || 'Não foi possível atualizar.', 'error');
+      return false;
+    }, [showToast, refreshAll]);
+
+    const removeExpense = useCallback(async (id: string): Promise<boolean> => {
+      const res = await expensesApi.remove(id);
+      if (res.success) {
+        showToast('Despesa removida', 'Registo eliminado.', 'success');
+        await refreshAll();
+        return true;
+      }
+      showToast('Erro', res.error || 'Não foi possível remover.', 'error');
+      return false;
+    }, [showToast, refreshAll]);
 
   const lowStockIngredients = useMemo(
     () => ingredients.filter((i) => i.currentStock !== undefined && i.minimumStock !== undefined && i.currentStock <= i.minimumStock),
@@ -1308,12 +1382,17 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     logPayment: registerPayment,
 
     backupPoints,
-    createManualBackup,
-    restoreBackupPoint,
-    exportBackupJSON,
-    isAutoBackupRunning,
+        createManualBackup,
+        restoreBackupPoint,
+        exportBackupJSON,
+        isAutoBackupRunning,
 
-    updateConfig,
+        expenses,
+        addExpense,
+        updateExpense,
+        removeExpense,
+
+        updateConfig,
     resetAllData,
     showToast,
     removeToast,

@@ -18,6 +18,7 @@ import { SettingsView } from './SettingsView';
 // estruturalmente incompleto (refere estado não declarado). Será reconstruído
 // numa fase própria de QA/CMS e depois re-habilitado.
 import { MediaLibraryView } from './MediaLibraryView';
+import { ExpensesView } from './ExpensesView';
 
 export const AdminLayout: React.FC = () => {
   const { adminSubView } = useRestaurant();
@@ -39,7 +40,9 @@ export const AdminLayout: React.FC = () => {
       case 'stock':
         return <StockControlView />;
       case 'payments':
-        return <PaymentsView />;
+              return <PaymentsView />;
+            case 'expenses':
+              return <ExpensesView />;
       case 'customers':
         return <CustomersView />;
       case 'users':

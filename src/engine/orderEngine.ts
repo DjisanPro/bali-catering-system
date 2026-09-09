@@ -124,13 +124,15 @@ export const orderEngine = {
     if (current === 'DELIVERED') return false; // Delivered is terminal
 
     const flow: Record<OrderStatus, OrderStatus[]> = {
-      PENDING: ['CONFIRMED', 'PREPARING', 'CANCELLED'],
-      CONFIRMED: ['PREPARING', 'READY', 'CANCELLED'],
-      PREPARING: ['READY', 'DELIVERED', 'CANCELLED'],
-      READY: ['DELIVERED', 'CANCELLED'],
-      DELIVERED: [],
-      CANCELLED: [],
-    };
+          RECEIVED: ['PENDING', 'CONFIRMED', 'CANCELLED'],
+          PENDING: ['RECEIVED', 'CONFIRMED', 'PREPARING', 'CANCELLED'],
+          CONFIRMED: ['PREPARING', 'READY', 'CANCELLED'],
+          PREPARING: ['READY', 'DELIVERED', 'CANCELLED'],
+          READY: ['OUT_FOR_DELIVERY', 'DELIVERED', 'CANCELLED'],
+          OUT_FOR_DELIVERY: ['DELIVERED', 'CANCELLED'],
+          DELIVERED: [],
+          CANCELLED: [],
+        };
 
     return flow[current]?.includes(next) ?? false;
   },

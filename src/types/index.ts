@@ -2,7 +2,7 @@ export type UnitOfMeasure = 'kg' | 'g' | 'l' | 'ml' | 'un' | 'porcao';
 
 export type StockMovementType = 'ENTRY' | 'EXIT_ORDER' | 'EXIT_WASTE' | 'ADJUSTMENT';
 
-export type OrderStatus = 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
+export type OrderStatus = 'RECEIVED' | 'PENDING' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
 
 export type OrderType = 'DINE_IN' | 'TAKEAWAY' | 'DELIVERY' | 'EVENT_CATERING';
 
@@ -626,4 +626,15 @@ export interface Permission {
   name: string;
   module: string;
   description: string;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  category: string;
+  amount: number;
+  expenseDate: string;
+  responsible?: string;
+  notes?: string;
+  createdAt: string;
 }
