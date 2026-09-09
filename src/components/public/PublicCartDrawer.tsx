@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRestaurant } from '../../context/RestaurantContext';
-import { formatMT, buildWhatsAppOrderUrl } from '../../utils/formatters';
-import { OrderType, PaymentMethod } from '../../types';
+import { formatMT, buildWhatsAppOrderUrl, getPaymentMethodLabel } from '../../utils/formatters';
+import { OrderType, PaymentMethod, Order } from '../../types';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -42,7 +42,7 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('MPESA');
   const [orderNotes, setOrderNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedOrderNumber, setCompletedOrderNumber] = useState<string | null>(null);
+    const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
   const activeOpen = isOpen !== undefined ? isOpen : isCartOpen;
 
@@ -118,7 +118,7 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
         origin: { y: 0.6 },
       });
 
-      setCompletedOrderNumber(created.orderNumber);
+      setCompletedOrder(created);
 
       if (isWhatsApp) {
         const whatsappUrl = buildWhatsAppOrderUrl(
@@ -157,7 +157,7 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
     } else {
       setIsCartOpen(false);
     }
-    setCompletedOrderNumber(null);
+    setCompletedOrder(null);
   };
 
   return (
@@ -184,47 +184,77 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
         </div>
 
         {/* Completed Order Success View */}
-        {completedOrderNumber ? (
-          <div className="p-8 text-center flex-1 flex flex-col justify-center items-center space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
-              <CheckCircle className="w-8 h-8" />
-            </div>
-            <div className="space-y-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E86319] bg-orange-50 px-3 py-1 rounded-full">
-                Pedido Registado
-              </span>
-              <h3 className="text-2xl font-serif font-black text-zinc-950 pt-1">
-                Obrigado pela preferência!
-              </h3>
-              <p className="text-xs text-zinc-600 max-w-xs mx-auto font-sans leading-relaxed">
-                O seu pedido foi recebido sob o número{' '}
-                <strong className="text-zinc-950 font-bold">{completedOrderNumber}</strong>.
-              </p>
-            </div>
+                {completedOrder ? (
+                  <div className="p-8 text-center flex-1 flex flex-col justify-center items-center space-y-5">
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+                      <CheckCircle className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#E86319] bg-orange-50 px-3 py-1 rounded-full">
+                        Pedido Registado
+                      </span>
+                      <h3 className="text-2xl font-serif font-black text-zinc-950 pt-1">
+                        Obrigado pela preferência!
+                      </h3>
+                      <p className="text-xs text-zinc-600 max-w-xs mx-auto font-sans leading-relaxed">
+                        O seu pedido foi recebido sob o número{' '}
+                        <strong className="text-zinc-950 font-bold">{completedOrder.orderNumber || '—'}</strong>.
+                      </p>
+                    </div>
 
-            <div className="bg-white border border-[#EAE5DC] rounded-2xl p-4 w-full text-left text-xs space-y-2 text-zinc-600 font-sans shadow-2xs">
-              <div className="flex justify-between">
-                <span>Estado:</span>
-                <span className="font-bold text-amber-600">Em preparação na cozinha</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Cliente:</span>
-                <span className="font-semibold text-zinc-900">{customerName}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Total a Pagar:</span>
-                <span className="font-black text-zinc-950">{formatMT(orderTotal)}</span>
-              </div>
-            </div>
+                    <div className="bg-white border border-[#EAE5DC] rounded-2xl p-4 w-full text-left text-xs space-y-2 text-zinc-600 font-sans shadow-2xs">
+                      <div className="flex justify-between">
+                        <span>Estado:</span>
+                        <span className="font-bold text-amber-600">
+                          {completedOrder.status === 'CONFIRMED' ? 'Pedido Confirmado' : 'Pedido Recebido'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Tipo:</span>
+                        <span className="font-semibold text-zinc-900">
+                          {completedOrder.orderType === 'DELIVERY' ? 'Entrega' : completedOrder.orderType === 'DINE_IN' ? 'Consumir no Local' : 'Takeaway'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Cliente:</span>
+                        <span className="font-semibold text-zinc-900">{completedOrder.customerName || customerName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Pagamento:</span>
+                        <span className="font-semibold text-zinc-900">
+                          {completedOrder.paymentMethod ? getPaymentMethodLabel(completedOrder.paymentMethod) : (paymentMethod ? getPaymentMethodLabel(paymentMethod) : '—')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Estado do Pagamento:</span>
+                        <span className={`font-bold ${completedOrder.paymentStatus === 'PAID' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                          {completedOrder.paymentStatus === 'PAID' ? 'PAGO' : 'PENDENTE'}
+                        </span>
+                      </div>
+                      {(completedOrder.items || []).length > 0 && (
+                        <div className="pt-2 border-t border-[#EAE5DC] space-y-1">
+                          {(completedOrder.items || []).map((it: any, idx: number) => (
+                            <div key={idx} className="flex justify-between text-[11px]">
+                              <span>{it.quantity}x {it.productName}</span>
+                              <span className="font-semibold text-zinc-900">{formatMT(Number(it.price) * Number(it.quantity))}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex justify-between pt-2 border-t border-[#EAE5DC]">
+                        <span className="font-bold text-zinc-950">Total a Pagar:</span>
+                        <span className="font-black text-zinc-950">{formatMT(Number(completedOrder.total))}</span>
+                      </div>
+                    </div>
 
-            <button
-              onClick={handleClose}
-              className="w-full py-3.5 rounded-full bg-[#E86319] hover:bg-[#D45512] text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer"
-            >
-              Voltar ao Cardápio
-            </button>
-          </div>
-        ) : cart.length === 0 ? (
+                    <button
+                      onClick={handleClose}
+                      className="w-full py-3.5 rounded-full bg-[#E86319] hover:bg-[#D45512] text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer"
+                    >
+                      Voltar ao Cardápio
+                    </button>
+                  </div>
+                ) : cart.length === 0 ? (
           /* Empty Cart State */
           <div className="p-8 text-center flex-1 flex flex-col justify-center items-center space-y-4">
             <div className="w-14 h-14 rounded-full bg-[#F4EFE6] text-[#E86319] flex items-center justify-center">
@@ -455,7 +485,7 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
         )}
 
         {/* Drawer Footer & Checkout Action */}
-        {!completedOrderNumber && cart.length > 0 && (
+        {!completedOrder && cart.length > 0 && (
           <div className="p-5 border-t border-[#EAE5DC] bg-white space-y-3">
             {/* Price Breakdown */}
             <div className="space-y-1.5 text-xs text-zinc-600 font-sans">

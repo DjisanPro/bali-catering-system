@@ -238,7 +238,7 @@ export const POSView: React.FC = () => {
   const changeAmount = paymentMethod === 'CASH' ? Math.max(0, numReceived - total) : 0;
   const isInsufficientCash = paymentMethod === 'CASH' && numReceived < total && numReceived > 0;
 
-  const handleFinalizeOrder = () => {
+  const handleFinalizeOrder = async () => {
     if (ticketItems.length === 0) return;
 
     if (paymentMethod === 'CASH' && paymentStatus === 'PAID' && numReceived < total) {
@@ -258,7 +258,7 @@ export const POSView: React.FC = () => {
       notes: item.notes,
     }));
 
-    const created = createOrder({
+    const created = await createOrder({
       customerName: trimmedName,
       customerPhone: customerPhone.trim() || '+258 87 202 2777',
       customerAddress:

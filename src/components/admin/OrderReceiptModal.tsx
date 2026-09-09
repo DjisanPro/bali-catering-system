@@ -1,6 +1,6 @@
 import React from 'react';
 import { Order } from '../../types';
-import { formatMT, formatDateTime, getOrderTypeLabel, getPaymentMethodLabel } from '../../utils/formatters';
+import { formatMT, safeMT, formatDateTime, getOrderTypeLabel, getPaymentMethodLabel } from '../../utils/formatters';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { BaliLogo } from '../common/BaliLogo';
 import { Printer, X } from 'lucide-react';
@@ -58,23 +58,23 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
           </div>
 
           {/* Order Details */}
-          <div className="space-y-1 text-[11px] pb-3 border-b border-dashed border-slate-300">
-            <div className="flex justify-between font-bold text-slate-900">
-              <span>PEDIDO Nº:</span>
-              <span>{order.orderNumber}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>DATA:</span>
-              <span>{formatDateTime(order.createdAt)}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>CLIENTE:</span>
-              <span className="font-bold">{order.customerName}</span>
-            </div>
-            <div className="flex justify-between text-slate-600">
-              <span>TIPO:</span>
-              <span>{getOrderTypeLabel(order.orderType)}</span>
-            </div>
+                    <div className="space-y-1 text-[11px] pb-3 border-b border-dashed border-slate-300">
+                      <div className="flex justify-between font-bold text-slate-900">
+                        <span>PEDIDO Nº:</span>
+                        <span>{order.orderNumber || '—'}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>DATA:</span>
+                        <span>{order.createdAt ? formatDateTime(order.createdAt) : '—'}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>CLIENTE:</span>
+                        <span className="font-bold">{order.customerName || 'Cliente'}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600">
+                        <span>TIPO:</span>
+                        <span>{order.orderType ? getOrderTypeLabel(order.orderType) : '—'}</span>
+                      </div>
             {order.customerAddress && (
               <div className="text-[10px] text-slate-500 pt-0.5">
                 Local: {order.customerAddress}
@@ -94,7 +94,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
                   <span className="font-medium">
                     {item.quantity}x {item.productName}
                   </span>
-                  <span className="font-bold">{formatMT(item.price * item.quantity)}</span>
+                  <span className="font-bold">{safeMT(item.price * item.quantity)}</span>
                 </div>
                 {item.notes && (
                   <p className="text-[10px] text-slate-500 italic pl-2">Obs: {item.notes}</p>
@@ -107,28 +107,28 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
           <div className="space-y-1 text-[11px] pb-3 border-b border-dashed border-slate-300">
             <div className="flex justify-between text-slate-600">
               <span>Subtotal:</span>
-              <span>{formatMT(order.subtotal)}</span>
-            </div>
-            {order.deliveryFee > 0 && (
-              <div className="flex justify-between text-slate-600">
-                <span>Taxa de Entrega:</span>
-                <span>{formatMT(order.deliveryFee)}</span>
-              </div>
-            )}
-            <div className="flex justify-between text-sm font-black text-slate-900 pt-1">
-              <span>TOTAL:</span>
-              <span>{formatMT(order.total)}</span>
-            </div>
-            <div className="flex justify-between text-[10px] text-slate-600 pt-1">
-              <span>Pagamento:</span>
-              <span className="font-bold">{getPaymentMethodLabel(order.paymentMethod)}</span>
-            </div>
-            <div className="flex justify-between text-[10px] text-slate-600">
-              <span>Estado Pgto:</span>
-              <span className={`font-bold ${order.paymentStatus === 'PAID' ? 'text-emerald-700' : 'text-amber-700'}`}>
-                {order.paymentStatus === 'PAID' ? 'PAGO' : 'PENDENTE'}
-              </span>
-            </div>
+                            <span>{safeMT(order.subtotal)}</span>
+                          </div>
+                          {Number(order.deliveryFee) > 0 && (
+                            <div className="flex justify-between text-slate-600">
+                              <span>Taxa de Entrega:</span>
+                              <span>{safeMT(order.deliveryFee)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-sm font-black text-slate-900 pt-1">
+                            <span>TOTAL:</span>
+                            <span>{safeMT(order.total)}</span>
+                          </div>
+                          <div className="flex justify-between text-[10px] text-slate-600 pt-1">
+                            <span>Pagamento:</span>
+                            <span className="font-bold">{order.paymentMethod ? getPaymentMethodLabel(order.paymentMethod) : '—'}</span>
+                          </div>
+                          <div className="flex justify-between text-[10px] text-slate-600">
+                            <span>Estado Pgto:</span>
+                            <span className={`font-bold ${order.paymentStatus === 'PAID' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                              {order.paymentStatus === 'PAID' ? 'PAGO' : order.paymentStatus === 'PARTIAL' ? 'PARCIAL' : 'PENDENTE'}
+                            </span>
+                          </div>
           </div>
 
           {/* Footer Receipt Notice */}

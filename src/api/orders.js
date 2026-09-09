@@ -88,33 +88,32 @@ export async function create(order) {
     if (orderError) return { success: false, error: orderError.message };
 
     // Create order items
-    if (items.length > 0) {
-      const orderItems = items.map((item) => ({
-        order_id: orderData.id,
-        product_id: item.productId ?? item.product_id,
-        product_name: item.productName ?? item.product_name,
-        price: item.price,
-        quantity: item.quantity || 1,
-        unit_cost: item.unitCost ?? item.unit_cost ?? 0,
-        notes: item.notes,
-      }));
+        const orderItems = items.map((item) => ({
+          order_id: orderData.id,
+          product_id: item.productId ?? item.product_id,
+          product_name: item.productName ?? item.product_name,
+          price: item.price,
+          quantity: item.quantity || 1,
+          unit_cost: item.unitCost ?? item.unit_cost ?? 0,
+          notes: item.notes,
+        }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+        if (items.length > 0) {
+          const { error: itemsError } = await supabase
+            .from('order_items')
+            .insert(orderItems);
 
-      if (itemsError) return { success: false, error: itemsError.message };
-    }
+          if (itemsError) return { success: false, error: itemsError.message };
+        }
 
     return {
-      success: true,
-      data: {
-        id: orderData.id,
-        orderNumber: orderData.order_number,
-        total: orderData.total,
-        paymentStatus: orderData.payment_status,
-      },
-    };
+          success: true,
+          data: {
+            ...orderData,
+            // Incluir itens no retorno (para o recibo renderizar items mesmo sem refetch)
+            items: orderItems,
+          },
+        };
   } catch (e) {
     return { success: false, error: e.message };
   }

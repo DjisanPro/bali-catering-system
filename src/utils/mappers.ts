@@ -88,6 +88,8 @@ export function mapOrder(raw: Dict): Dict {
   if (o.deliveryFee !== undefined) o.deliveryFee = Number(o.deliveryFee) || 0;
   if (o.discount !== undefined) o.discount = Number(o.discount) || 0;
   if (o.total !== undefined) o.total = Number(o.total) || 0;
+  // PostgREST devolve order_items como chave; normalizar para items
+  if (!Array.isArray(o.items) && Array.isArray(o.orderItems)) o.items = o.orderItems;
   // Garantir que items é sempre uma array (nunca undefined/null) para evitar .map() crash
   if (!Array.isArray(o.items)) o.items = [];
   o.items = (o.items as Dict[]).map((it: Dict) => {
@@ -95,6 +97,10 @@ export function mapOrder(raw: Dict): Dict {
     if (item.price !== undefined) item.price = Number(item.price) || 0;
     if (item.quantity !== undefined) item.quantity = Number(item.quantity) || 0;
     if (item.unitCost !== undefined) item.unitCost = Number(item.unitCost) || 0;
+    // Fallbacks para garantir shape consistente
+    if (item.productId !== undefined) item.productId = String(item.productId);
+    if (item.productName === undefined && item.product_name !== undefined) item.productName = item.product_name;
+    if (item.unitCost === undefined && item.costPrice !== undefined) item.unitCost = Number(item.costPrice) || 0;
     return item;
   });
   return o;

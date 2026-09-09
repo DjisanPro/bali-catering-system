@@ -785,13 +785,15 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       notes: orderData.notes,
     };
     const res = await ordersApi.create(payload);
-    if (res.success && res.data) {
-      const order = res.data.order || res.data;
-      clearCart();
-      showToast('Pedido criado', `${order.orderNumber || 'Pedido'} registado com sucesso.`);
-      await refreshAll();
-      return order;
-    }
+        if (res.success && res.data) {
+          const rawOrder = res.data.order || res.data;
+          // Map to camelCase Order shape (orderNumber, createdAt, customerName, subtotal, total...)
+                    const order = mapOrder(rawOrder) as unknown as Order;
+          clearCart();
+          showToast('Pedido criado', `${order.orderNumber || 'Pedido'} registado com sucesso.`);
+          await refreshAll();
+          return order;
+        }
     showToast('Erro', res.error || 'Não foi possível criar o pedido.', 'error');
     return null;
   }, [config, clearCart, showToast, refreshAll]);

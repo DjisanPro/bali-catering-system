@@ -6,6 +6,14 @@ export const formatMT = (amount: number): string => {
   }).format(amount) + ' MT';
 };
 
+/** Formata valores monetários com segurança: nunca devolve NaN/undefined.
+ *  Se o valor não for numérico finito, devolve 0 MT (não esconde o problema —
+ *  a causa do NaN é resolvida na origem; isto apenas evita renderizar NaN). */
+export const safeMT = (amount: unknown): string => {
+  const n = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
+  return formatMT(Number.isFinite(n) ? n : 0);
+};
+
 export const formatNumber = (num: number, decimals = 2): string => {
   return new Intl.NumberFormat('pt-MZ', {
     maximumFractionDigits: decimals,
