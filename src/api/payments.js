@@ -24,11 +24,13 @@ export async function getAll(filters = {}) {
 
 export async function create(payment) {
   try {
+    const orderNumber =
+      payment.orderNumber || (payment.orderId ? null : `AV-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${Date.now().toString().slice(-4)}`);
     const { data, error } = await supabase
       .from('payments')
       .insert({
-        order_id: payment.orderId,
-        order_number: payment.orderNumber,
+        order_id: payment.orderId || null,
+        order_number: orderNumber,
         customer_name: payment.customerName,
         amount: payment.amount,
         method: payment.method,

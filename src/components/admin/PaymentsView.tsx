@@ -48,8 +48,8 @@ export const PaymentsView: React.FC = () => {
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       return (
-        p.orderId.toLowerCase().includes(q) ||
-        (p.transactionReference && p.transactionReference.toLowerCase().includes(q)) ||
+        (p.orderId || 'AVULSO').toLowerCase().includes(q) ||
+        (p.reference && p.reference.toLowerCase().includes(q)) ||
         (p.notes && p.notes.toLowerCase().includes(q))
       );
     }
@@ -62,12 +62,12 @@ export const PaymentsView: React.FC = () => {
     if (num <= 0) return;
 
     logPayment({
-      orderId: orderId.trim() || 'AVULSO',
+      orderId: orderId.trim() === 'AVULSO' ? (undefined as any) : orderId.trim(),
       amount: num,
       method,
       status: 'PAID',
-      transactionReference: reference.trim() || `TX-${Date.now().toString().slice(-6)}`,
-      notes: notes.trim() || 'Recebimento de caixa manual',
+            reference: reference.trim() || `TX-${Date.now().toString().slice(-6)}`,
+            notes: notes.trim() || 'Recebimento de caixa manual',
     });
 
     setIsNewPaymentModalOpen(false);
@@ -191,7 +191,7 @@ export const PaymentsView: React.FC = () => {
                     {formatDateTime(pay.createdAt)}
                   </td>
                   <td className="p-3.5 font-mono font-bold text-slate-900">
-                    {pay.orderId}
+                    {pay.orderNumber || pay.orderId || 'AVULSO'}
                   </td>
                   <td className="p-3.5 font-semibold text-slate-800">
                     {getPaymentMethodLabel(pay.method)}

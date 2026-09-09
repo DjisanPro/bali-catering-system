@@ -253,7 +253,8 @@ interface RestaurantContextType {
   cloudSyncState: CloudSyncState;
 
   // Payment Operations
-  registerPayment: (payment: Omit<PaymentRecord, 'id' | 'createdAt'>) => PaymentRecord | null;
+    registerPayment: (payment: Omit<PaymentRecord, 'id' | 'createdAt'>) => PaymentRecord | null;
+    logPayment: (payment: Omit<PaymentRecord, 'id' | 'createdAt'>) => PaymentRecord | null;
 
   // Backup & Recovery
   backupPoints: BackupPoint[];
@@ -276,7 +277,28 @@ const CART_KEY = 'bali_catering_cart_v5';
 function loadCart(): CartItem[] {
   try {
     const raw = localStorage.getItem(CART_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    // Migrate old v4 format {id, productId, name, price} to v5 {product, quantity}
+    return parsed
+      .map((item: any) => {
+        if (item?.product?.id) return item as CartItem;
+        if (item?.productId) {
+          return {
+            product: {
+              id: item.productId,
+              name: item.name || 'Produto',
+              price: Number(item.price) || 0,
+              imageUrl: item.imageUrl,
+            },
+            quantity: Number(item.quantity) || 1,
+            notes: item.notes,
+          } as CartItem;
+        }
+        return null;
+      })
+      .filter(Boolean) as CartItem[];
   } catch {
     return [];
   }
@@ -675,58 +697,54 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   // Cart operations
   // -------------------------------------------------------------------
   const addToCart = useCallback((product: Product, quantity = 1, notes?: string) => {
-    setCart((prev) => {
-      const existing = prev.find((c) => c.productId === product.id);
-      let next: CartItem[];
-      if (existing) {
-        next = prev.map((c) =>
-          c.productId === product.id ? { ...c, quantity: c.quantity + quantity, notes: notes ?? c.notes } : c
-        );
-      } else {
-        next = [
-          ...prev,
-          {
-            id: product.id,
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            quantity,
-            imageUrl: product.imageUrl,
-            notes,
-          } as unknown as CartItem,
-        ];
-      }
-      saveCart(next);
-      return next;
-    });
-  }, []);
+      setCart((prev) => {
+        const existing = prev.find((c) => c.product.id === product.id);
+        let next: CartItem[];
+        if (existing) {
+          next = prev.map((c) =>
+            c.product.id === product.id ? { ...c, quantity: c.quantity + quantity, notes: notes ?? c.notes } : c
+          );
+        } else {
+          next = [
+            ...prev,
+            {
+              product,
+              quantity,
+              notes,
+            },
+          ];
+        }
+        saveCart(next);
+        return next;
+      });
+    }, []);
 
   const updateCartQuantity = useCallback((productId: string, quantity: number) => {
-    setCart((prev) => {
-      const next =
-        quantity <= 0
-          ? prev.filter((c) => c.productId !== productId)
-          : prev.map((c) => (c.productId === productId ? { ...c, quantity } : c));
-      saveCart(next);
-      return next;
-    });
-  }, []);
+      setCart((prev) => {
+        const next =
+          quantity <= 0
+            ? prev.filter((c) => c.product.id !== productId)
+            : prev.map((c) => (c.product.id === productId ? { ...c, quantity } : c));
+        saveCart(next);
+        return next;
+      });
+    }, []);
 
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prev) => {
-      const next = prev.filter((c) => c.productId !== productId);
-      saveCart(next);
-      return next;
-    });
-  }, []);
+    const removeFromCart = useCallback((productId: string) => {
+      setCart((prev) => {
+        const next = prev.filter((c) => c.product.id !== productId);
+        saveCart(next);
+        return next;
+      });
+    }, []);
 
   const clearCart = useCallback(() => {
     saveCart([]);
     setCart([]);
   }, []);
 
-  const cartSubtotal = useMemo(() => cart.reduce((sum, c) => sum + c.price * c.quantity, 0), [cart]);
-  const cartTotalItems = useMemo(() => cart.reduce((sum, c) => sum + c.quantity, 0), [cart]);
+  const cartSubtotal = useMemo(() => cart.reduce((sum, c) => sum + c.product.price * c.quantity, 0), [cart]);
+    const cartTotalItems = useMemo(() => cart.reduce((sum, c) => sum + c.quantity, 0), [cart]);
 
   // -------------------------------------------------------------------
   // Order operations (backend-backed)
@@ -744,8 +762,6 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
     const paymentMethod = orderData.paymentMethod || 'CASH';
     const amount = orderData.total ?? orderData.subtotal ?? 0;
-    // Map a total amount to the payment object the backend expects.
-    // Credit sales create a debt on the backend (method CREDIT).
     const isCredit = paymentMethod === ('CREDIT' as PaymentMethod);
     const payment = isCredit
       ? { method: 'CREDIT', amount: 0, due_date: ((orderData as any).paymentDueDate as string) || null }
@@ -754,18 +770,17 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           amount: amount > 0 ? amount : 0,
           reference: orderData.paymentReference,
         };
+    // Build flat payload that ordersApi.create expects
     const payload = {
-      customer: {
-        name: orderData.customerName || 'Cliente Ocasional',
-        phone: orderData.customerPhone,
-        address: orderData.customerAddress,
-        id: (orderData as any).customerId as string | undefined,
-      },
+      customerName: orderData.customerName || 'Cliente Ocasional',
+      customerPhone: orderData.customerPhone,
+      customerAddress: orderData.customerAddress,
+      customerId: (orderData as any).customerId as string | undefined,
       items,
-      order_type: orderData.orderType || 'TAKEAWAY',
-      table_number: (orderData as any).tableNumber,
+      orderType: orderData.orderType || 'TAKEAWAY',
+      tableNumber: (orderData as any).tableNumber,
       discount: orderData.discount || 0,
-      delivery_fee: orderData.deliveryFee ?? config.defaultDeliveryFee ?? 0,
+      deliveryFee: orderData.deliveryFee ?? config.defaultDeliveryFee ?? 0,
       payment,
       notes: orderData.notes,
     };
@@ -1288,6 +1303,7 @@ export const RestaurantProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     cloudSyncState,
 
     registerPayment,
+    logPayment: registerPayment,
 
     backupPoints,
     createManualBackup,

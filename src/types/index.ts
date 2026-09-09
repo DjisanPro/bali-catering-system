@@ -170,9 +170,9 @@ export interface Order {
 
 export interface PaymentRecord {
   id: string;
-  orderId: string;
-  orderNumber: string;
-  customerName: string;
+  orderId: string | null;
+  orderNumber?: string;
+  customerName?: string;
   amount: number;
   method: PaymentMethod;
   reference?: string;
@@ -180,7 +180,7 @@ export interface PaymentRecord {
   status: 'COMPLETED' | 'PENDING' | 'REFUNDED' | 'PAID';
   notes?: string;
   createdAt: string;
-  receivedBy: string;
+  receivedBy?: string;
   shiftId?: string;
 }
 

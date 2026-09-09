@@ -91,11 +91,11 @@ export async function create(order) {
     if (items.length > 0) {
       const orderItems = items.map((item) => ({
         order_id: orderData.id,
-        product_id: item.productId,
-        product_name: item.productName,
+        product_id: item.productId ?? item.product_id,
+        product_name: item.productName ?? item.product_name,
         price: item.price,
         quantity: item.quantity || 1,
-        unit_cost: item.unitCost || 0,
+        unit_cost: item.unitCost ?? item.unit_cost ?? 0,
         notes: item.notes,
       }));
 
