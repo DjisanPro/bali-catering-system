@@ -179,8 +179,8 @@ export const DashboardView: React.FC = () => {
                         <div className="text-[10px] text-slate-400">{order.customerPhone}</div>
                       </td>
                       <td className="px-5 py-4 text-slate-600 max-w-[180px] truncate">
-                        {order.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
-                      </td>
+                                              {(order.items || []).map((i) => `${i.quantity}x ${i.productName}`).join(', ') || '—'}
+                                            </td>
                       <td className="px-5 py-4 text-right font-bold text-slate-900 whitespace-nowrap">
                         {formatMT(order.total)}
                       </td>

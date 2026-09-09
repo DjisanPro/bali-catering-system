@@ -31,8 +31,8 @@ export const AdminAuthModal: React.FC = () => {
 
   const [authMethod, setAuthMethod] = useState<'password' | 'pin'>('password');
   const [authRole, setAuthRole] = useState<UserRole>('ADMIN');
-  const [username, setUsername] = useState<string>('admin');
-  const [email, setEmail] = useState<string>('admin@balicatering.co.mz');
+  const [username, setUsername] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [pin, setPin] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -61,13 +61,9 @@ export const AdminAuthModal: React.FC = () => {
       setSuccessMsg('');
       setIsSuccess(false);
       setIsForgotView(false);
-      if (authRole === 'ADMIN') {
-        setUsername('admin');
-        setEmail('admin@balicatering.co.mz');
-      } else if (activeSellers.length > 0) {
-        setUsername(activeSellers[0].username);
-        setEmail(`${activeSellers[0].username}@balicatering.co.mz`);
-      }
+      // Não pré-preencher credenciais — o utilizador digita o seu próprio email/senha
+      setUsername('');
+      setEmail('');
       setTimeout(() => {
         if (authMethod === 'password') {
           emailInputRef.current?.focus();
@@ -85,16 +81,9 @@ export const AdminAuthModal: React.FC = () => {
   const handleRoleChange = (newRole: UserRole) => {
     setAuthRole(newRole);
     setErrorMsg('');
-    if (newRole === 'ADMIN') {
-      setUsername('admin');
-      setEmail('admin@balicatering.co.mz');
-    } else if (activeSellers.length > 0) {
-      setUsername(activeSellers[0].username);
-      setEmail(`${activeSellers[0].username}@balicatering.co.mz`);
-    } else {
-      setUsername('');
-      setEmail('');
-    }
+    // Não pré-preencher credenciais — o utilizador digita o seu próprio email/senha
+    setUsername('');
+    setEmail('');
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
@@ -344,6 +333,44 @@ export const AdminAuthModal: React.FC = () => {
         ) : authMethod === 'password' ? (
           /* Formulário de Login */
           <form onSubmit={handlePasswordSubmit} className="p-6 space-y-4">
+            {/* Acesso Rápido por Perfil */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                Aceder como
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleRoleChange('ADMIN')}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    authRole === 'ADMIN'
+                      ? 'bg-slate-900 text-white border-slate-900 shadow-md'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                  }`}
+                >
+                  <Store className="w-3.5 h-3.5" />
+                  Administração
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleRoleChange('SELLER')}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    authRole === 'SELLER'
+                      ? 'bg-[#E86319] text-white border-[#E86319] shadow-md'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                  }`}
+                >
+                  <UserIcon className="w-3.5 h-3.5" />
+                  Vendedor (PDV)
+                </button>
+              </div>
+              {authRole === 'SELLER' && activeSellers.length > 0 && (
+                <p className="text-[10px] text-slate-500 mt-1.5 font-medium">
+                  Vendedores ativos: {activeSellers.map((s) => s.username.replace('.vendedor', '').split('.')[0]).join(', ')}
+                </p>
+              )}
+            </div>
+
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                 E-mail Institucional

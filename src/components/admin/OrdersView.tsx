@@ -186,7 +186,7 @@ export const OrdersView: React.FC = () => {
 
                         {/* Items list */}
                         <div className="bg-slate-50 p-2 rounded-lg text-[11px] space-y-1 text-slate-700">
-                          {order.items.map((item, idx) => (
+                          {(order.items || []).map((item, idx) => (
                             <div key={idx} className="flex justify-between">
                               <span className="truncate max-w-[130px]">
                                 {item.quantity}x {item.productName}
@@ -350,7 +350,7 @@ export const OrdersView: React.FC = () => {
                         {getOrderTypeLabel(order.orderType)}
                       </td>
                       <td className="p-3.5 text-slate-600 max-w-xs truncate">
-                        {order.items.map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
+                        {(order.items || []).map((i) => `${i.quantity}x ${i.productName}`).join(', ')}
                       </td>
                       <td className="p-3.5 font-black text-slate-900">
                         {formatMT(order.total)}

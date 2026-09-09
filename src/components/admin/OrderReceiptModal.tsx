@@ -88,7 +88,7 @@ export const OrderReceiptModal: React.FC<OrderReceiptModalProps> = ({ order, onC
               <span>Item / Qtd</span>
               <span>Total MT</span>
             </div>
-            {order.items.map((item, idx) => (
+            {(order.items || []).map((item, idx) => (
               <div key={idx} className="space-y-0.5">
                 <div className="flex justify-between text-[11px]">
                   <span className="font-medium">

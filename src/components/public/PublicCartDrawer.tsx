@@ -51,11 +51,11 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
   const deliveryFee = orderType === 'DELIVERY' ? config.defaultDeliveryFee : 0;
   const orderTotal = cartSubtotal + deliveryFee;
 
-  const handleCheckout = (isWhatsApp = true) => {
-    if (cart.length === 0) {
-      showToast('Sacola vazia', 'Adicione pelo menos um prato para continuar.', 'warning');
-      return;
-    }
+  const handleCheckout = async (isWhatsApp = true) => {
+      if (cart.length === 0) {
+        showToast('Sacola vazia', 'Adicione pelo menos um prato para continuar.', 'warning');
+        return;
+      }
 
     if (!customerName.trim()) {
       showToast('Nome obrigatório', 'Por favor, informe o seu nome.', 'warning');
@@ -84,8 +84,8 @@ export const PublicCartDrawer: React.FC<PublicCartDrawerProps> = ({ isOpen, onCl
         notes: item.notes,
       }));
 
-      // Create order in persistent state
-      const created = createOrder({
+      // Create order in persistent state (await! createOrder é async)
+            const created = await createOrder({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         customerAddress:

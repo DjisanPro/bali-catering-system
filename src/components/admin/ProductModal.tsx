@@ -551,9 +551,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({ product, onClose }) 
 
                     {/* Preset Photos Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-                      {FOOD_PHOTO_PRESETS.find(
-                        (c) => c.category === selectedPhotoCategory
-                      )?.items.map((item) => {
+                      {(FOOD_PHOTO_PRESETS.find(
+                                              (c) => c.category === selectedPhotoCategory
+                                            )?.items || []).map((item) => {
                         const isSelected = imageUrl === item.url;
                         return (
                           <div
