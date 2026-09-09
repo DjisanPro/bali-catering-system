@@ -51,3 +51,4 @@ supabase/migrations/001_schema_clean.sql
 supabase/seed_products.sql
 supabase/signup_ids.json
 workers/seeds.sql
+.shot_after_save.png
